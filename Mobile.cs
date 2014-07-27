@@ -54,7 +54,17 @@ namespace InfiniTag
 
         public void LoadContent(ContentManager content)
         {
-            image = content.Load<Texture2D>("prep2.png");
+            string img = "";
+            if (identity == 1)
+            {
+                img = "prep2.png";
+            }
+            else
+            {
+                img = "alien.png";
+            }
+
+            image = content.Load<Texture2D>(img);
         }
 
         public void Update(Controls controls, GameTime gameTime)

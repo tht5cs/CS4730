@@ -85,7 +85,7 @@ namespace InfiniTag
         protected void NewMobile()
         {
             int xpos = rnd.Next(1, 429);
-            int nextId = rnd.Next(1, 10);
+            int nextId = rnd.Next(1, 3);
             Mobile tempMob = new Mobile(xpos ,-50 ,50,50, scrollSpeed, nextId);
             tempMob.LoadContent(this.Content);
             mobList.Add(tempMob);
