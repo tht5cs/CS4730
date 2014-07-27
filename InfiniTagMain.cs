@@ -85,7 +85,8 @@ namespace InfiniTag
         protected void NewMobile()
         {
             int xpos = rnd.Next(1, 429);
-            Mobile tempMob = new Mobile(xpos ,-50 ,50,50, scrollSpeed);
+            int nextId = rnd.Next(1, 10);
+            Mobile tempMob = new Mobile(xpos ,-50 ,50,50, scrollSpeed, nextId);
             tempMob.LoadContent(this.Content);
             mobList.Add(tempMob);
         }
@@ -116,16 +117,6 @@ namespace InfiniTag
 
             player1.Update(controls, gameTime);
 
-            /*
-            foreach (Mobile m in mobList)
-            {
-                m.Update(controls, gameTime);
-                if (m.getY() > 640)
-                {
-                    //Deletion code
-                }
-            }
-            */
             for (int i = mobList.Count - 1; i >= 0; i--)
             {
                 mobList[i].Update(controls, gameTime);

@@ -17,13 +17,15 @@ namespace InfiniTag
         public int movedY;
         public double gravity = .5;
         public int maxFallSpeed = 10;
+        int identity; //controls color/obstacle identity
 
-        public Mobile(int x, int y, int width, int height, int inSpeed)
+        public Mobile(int x, int y, int width, int height, int inSpeed, int id)
         {
             this.spriteX = x;
             this.spriteY = y;
             this.spriteWidth = width;
             this.spriteHeight = height;
+            this.identity = id;
 
 			// Movement
 			speed = inSpeed;
