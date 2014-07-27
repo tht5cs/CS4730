@@ -10,8 +10,7 @@ namespace InfiniTag
 {
 	class Player : Sprite
     {
-		private bool moving;
-		private bool grounded;
+
 		private int speed;
 		private int x_accel;
         private int y_accel;
@@ -21,9 +20,6 @@ namespace InfiniTag
 		public int movedX;
         public int movedY;
 		private bool pushing;
-		public double gravity = .5;
-		public int maxFallSpeed = 10;
-		private int jumpPoint = 0;
 
         private bool invert = false;
         
@@ -33,8 +29,6 @@ namespace InfiniTag
             this.spriteY = y;
             this.spriteWidth = width;
             this.spriteHeight = height;
-			grounded = false;
-			moving = false;
 			pushing = false;
 
 			// Movement
@@ -160,16 +154,12 @@ namespace InfiniTag
 			grounded = false;
             */
 			// Check up/down collisions, then left/right
-			checkYCollisions();
+			checkCollisions();
 
 		}
 
-		private void checkYCollisions()
+		private void checkCollisions()
 		{
-			if (spriteY >= 400)
-				grounded = true;
-			else
-				grounded = false;
 		}
 
         /*

@@ -15,8 +15,6 @@ namespace InfiniTag
         public double y_vel;
         public int movedX;
         public int movedY;
-        public double gravity = .5;
-        public int maxFallSpeed = 10;
         int identity; //controls color/obstacle identity
 
         public Mobile(int x, int y, int width, int height, int inSpeed, int id)
