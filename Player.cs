@@ -162,6 +162,21 @@ namespace InfiniTag
 		{
 		}
 
+        public void meterIsFull()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void getScore()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void getTime()
+        {
+            throw new System.NotImplementedException();
+        }
+
         /*
 		private void Jump(Controls controls, GameTime gameTime)
 		{

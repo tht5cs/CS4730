@@ -26,6 +26,10 @@ namespace InfiniTag
         Random rnd;
         Double mobTimer;
         int scrollSpeed;
+        private int time;
+        private int meter;
+        private int gameSounds;
+        private int leaderBoard;
 
         public InfiniTagMain()
         {
