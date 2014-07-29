@@ -26,8 +26,13 @@ namespace InfiniTag
         Random rnd;
         Double mobTimer;
         int scrollSpeed;
+
+        private int score;
         private int time;
         private int meter;
+        private int meterRed;
+        private int meterGreen;
+        private int meterBlue;
         private int gameSounds;
         private int leaderBoard;
 
@@ -151,12 +156,21 @@ namespace InfiniTag
                         {
                             case 1:
                                 mobList.RemoveAt(i);
+                                score++;
+                                meterRed++;
+                                meter++;
                                 break;
                             case 2:
                                 mobList.RemoveAt(i);
+                                score++;
+                                meterGreen++;
+                                meter++;
                                 break;
                             case 3:
                                 mobList.RemoveAt(i);
+                                score++;
+                                meterBlue++;
+                                meter++;
                                 break;
                             default:
                                 gameOver = true;
@@ -170,6 +184,9 @@ namespace InfiniTag
                         mobList.RemoveAt(i);
                     }
                 }
+
+
+
                 if (gameOver)
                 {
                     Reset();
@@ -222,7 +239,13 @@ namespace InfiniTag
             mobList.RemoveAt(i);
             }
             player1.setX(screenWidth/2-50);
-            player1.setY(screenHeight-55);               
+            player1.setY(screenHeight/2-50);
+            score = 0;
+            time = 0;
+            meterRed = 0;
+            meterGreen = 0;
+            meterBlue = 0;
+            meter = 0;
         }
 
 
