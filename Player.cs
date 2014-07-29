@@ -89,6 +89,7 @@ namespace InfiniTag
 
             if (spriteX < 430 || spriteX > 0 || spriteY > 0 || spriteY < 590)
             {
+                /*
 
                 // Sideways Acceleration
                 if (controls.onPress(Keys.Right, Buttons.DPadRight))
@@ -108,6 +109,37 @@ namespace InfiniTag
                 if (controls.onPress(Keys.Down, Buttons.DPadDown))
                     y_accel += speed;
                 else if (controls.onRelease(Keys.Down, Buttons.DPadDown))
+                    y_accel = 0;
+                  
+                 */
+
+                // Sideways Acceleration
+                bool right = controls.isHeld(Keys.Right, Buttons.DPadRight);
+                bool left = controls.isHeld(Keys.Left, Buttons.DPadLeft);
+                bool up = controls.isHeld(Keys.Up, Buttons.DPadUp);
+                bool down = controls.isHeld(Keys.Down, Buttons.DPadDown);
+
+                if (right)
+                    x_accel = speed;
+                else if (controls.onRelease(Keys.Right, Buttons.DPadRight))
+                    x_accel = 0;
+                if (left)
+                    x_accel = -speed;
+                else if (controls.onRelease(Keys.Left, Buttons.DPadLeft))
+                    x_accel = 0;
+                if (right && left)
+                    x_accel = 0;
+
+                // Y axis Accelration
+                if (up)
+                    y_accel = -speed;
+                else if (controls.onRelease(Keys.Up, Buttons.DPadUp))
+                    y_accel = 0;
+                if (down)
+                    y_accel = speed;
+                else if (controls.onRelease(Keys.Down, Buttons.DPadDown))
+                    y_accel = 0;
+                if (up && down)
                     y_accel = 0;
             }
             
