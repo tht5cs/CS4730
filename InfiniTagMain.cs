@@ -35,6 +35,7 @@ namespace InfiniTag
         private int screenHeight = 640;
 
         private bool pause = false;
+        private bool gameOver = false;
 
         public InfiniTagMain()
         {
@@ -113,7 +114,7 @@ namespace InfiniTag
                 pause = !pause;
             }
 
-            if (!pause)
+            if (!(pause || gameOver))
             {
                 background.Update(gameTime);
 
@@ -143,19 +144,36 @@ namespace InfiniTag
                     int mobY = mobList[i].getY();
 
                     //collision detection loop
-                    if (collision(mobX, mobY, playerX, playerY, 37))
+                    if (Collision(mobX, mobY, playerX, playerY, 37))
                     {
                         // temporary collision code
-                        if (mobList[i].getId() == 1)
-                            mobList.RemoveAt(i);
-                        else
-                            mobList.RemoveAt(i);
+                        switch(mobList[i].getId())
+                        {
+                            case 1:
+                                mobList.RemoveAt(i);
+                                break;
+                            case 2:
+                                mobList.RemoveAt(i);
+                                break;
+                            case 3:
+                                mobList.RemoveAt(i);
+                                break;
+                            default:
+                                gameOver = true;
+                                break;
+                        }
+
                     }
 
                     else if (mobY > screenHeight)
                     {
                         mobList.RemoveAt(i);
                     }
+                }
+                if (gameOver)
+                {
+                    Reset();
+                    gameOver = false;
                 }
 
                 base.Update(gameTime);
@@ -189,7 +207,7 @@ namespace InfiniTag
 
         // checks if two particles 1 and 2 come within distance d of each other.
         // returns true if they do, else false.
-        private bool collision(int x1, int y1, int x2, int y2, int d)
+        private bool Collision(int x1, int y1, int x2, int y2, int d)
         {
             if (((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < d * d)
                 return true;
@@ -197,7 +215,21 @@ namespace InfiniTag
                 return false;
         }
 
+        private void Reset()
+        {
+            for (int i = mobList.Count - 1; i >= 0; i--)
+            {
+            mobList.RemoveAt(i);
+            }
+            player1.setX(screenWidth/2-50);
+            player1.setY(screenHeight-55);               
+        }
+
+
+        }
+
     }
 
-}
+
+
 
