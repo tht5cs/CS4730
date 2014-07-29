@@ -27,12 +27,15 @@ namespace InfiniTag
         Double mobTimer;
         int scrollSpeed;
 
+        SpriteFont Font1;
+
 
 
         //HUD stuff
         Texture2D RuleBar;
         private int score;
-        private int time;
+        private double initialTime = 3;
+        private double time = 3;
         private int meter;
         private int meterRed;
         private int meterGreen;
@@ -42,6 +45,11 @@ namespace InfiniTag
 
         //HUD location information
         private int ruleBarX = 5;
+        int barThickness = 35;
+
+
+
+        Vector2 scorePos = new Vector2(10, 10);
 
         private int screenWidth = 480;
         private int screenHeight = 640;
@@ -93,6 +101,9 @@ namespace InfiniTag
             background.Initialize(Content, "bg1.jpg", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -scrollSpeed);
 
             RuleBar = Content.Load<Texture2D>("Bar.png") as Texture2D;
+
+            Font1 = Content.Load<SpriteFont>("font");
+
             
             // TODO: use this.Content to load your game content here
         }
@@ -133,6 +144,10 @@ namespace InfiniTag
                 background.Update(gameTime);
 
                 mobTimer += gameTime.ElapsedGameTime.TotalSeconds;
+                time -= gameTime.ElapsedGameTime.TotalSeconds;
+                if (time <= 0)
+                    gameOver = true;
+
                 if (mobTimer > 0.5)
                 {
                     mobTimer = 0;
@@ -169,18 +184,21 @@ namespace InfiniTag
                                 score++;
                                 meterRed++;
                                 meter++;
+                                time = initialTime;
                                 break;
                             case 2:
                                 mobList.RemoveAt(i);
                                 score++;
                                 meterGreen++;
                                 meter++;
+                                time = initialTime;
                                 break;
                             case 3:
                                 mobList.RemoveAt(i);
                                 score++;
                                 meterBlue++;
                                 meter++;
+                                time = initialTime;
                                 break;
                             default:
                                 gameOver = true;
@@ -227,8 +245,8 @@ namespace InfiniTag
             player1.Draw(spriteBatch);
 
             drawRuleBar();
-
-
+            drawTimeBar();
+            drawScore();
 
 
 
@@ -237,33 +255,44 @@ namespace InfiniTag
             base.Draw(gameTime);
         }
 
+        public void drawScore()
+        {
+            string scoreString = "Score: " + score;
+            spriteBatch.DrawString(Font1, scoreString, scorePos, Color.Black);
+        }
+
         public void drawRuleBar()
         {
             //this is the background color of the bar
-            spriteBatch.Draw(RuleBar, new Rectangle(5, this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, 44), new Rectangle(0, 45, RuleBar.Width, 44), Color.Black);
+            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX, this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, barThickness+5), new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Black);
 
 
             //If the above clamp is changed then the (double)RuleCharge/x must also be modified.
             //this is the stuff that will fill up the bar, might need to be modified for color coding (split up the bar itself?)
             spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterRed / 20)), 44),
-                 new Rectangle(0, 45, RuleBar.Width, 44), Color.Red);
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterRed / 20)), barThickness),
+                 new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Red);
 
             int redMeterEndX = ruleBarX + (int)(RuleBar.Width / 2 * ((double)meterRed / 20));
 
             spriteBatch.Draw(RuleBar, new Rectangle(redMeterEndX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterGreen / 20)), 44),
-                 new Rectangle(0, 45, RuleBar.Width, 44), Color.Green);
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterGreen / 20)), barThickness),
+                 new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Green);
 
             int greenMeterEndX = redMeterEndX + (int)(RuleBar.Width / 2 * ((double)meterGreen / 20));
 
             spriteBatch.Draw(RuleBar, new Rectangle(greenMeterEndX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterBlue / 20)), 44),
-                 new Rectangle(0, 45, RuleBar.Width, 44), Color.Blue);
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterBlue / 20)), barThickness),
+                 new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Blue);
 
             //This draws the border of the bar
             spriteBatch.Draw(RuleBar, new Rectangle(5,
-                this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, 44), new Rectangle(0, 0, RuleBar.Width, 44), Color.White);
+                this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, barThickness+5), new Rectangle(0, 0, RuleBar.Width, barThickness), Color.White);
+        }
+
+        public void drawTimeBar()
+        {
+            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX + RuleBar.Width / 2, this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * (time / initialTime)), barThickness + 5), new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Yellow);
         }
 
         // checks if two particles 1 and 2 come within distance d of each other.
@@ -319,6 +348,7 @@ namespace InfiniTag
             score = 0;
             time = 0;
             emptyMeters();
+            time = initialTime;
         }
 
 
