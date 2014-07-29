@@ -31,12 +31,16 @@ namespace InfiniTag
         private int gameSounds;
         private int leaderBoard;
 
+        private int screenWidth = 480;
+        private int screenHeight = 640;
+
+        private SpriteFont font;
         public InfiniTagMain()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = 480;
-            graphics.PreferredBackBufferHeight = 640;
+            graphics.PreferredBackBufferWidth = screenWidth;
+            graphics.PreferredBackBufferHeight = screenHeight;
         }
 
         /// <summary>
@@ -88,9 +92,8 @@ namespace InfiniTag
 
         protected void NewMobile()
         {
-            int xpos = rnd.Next(1, 429);
-            int nextId = rnd.Next(1, 3);
-            Mobile tempMob = new Mobile(xpos ,-50 ,50,50, scrollSpeed, nextId);
+            int xpos = rnd.Next(1, (screenWidth-51));
+            Mobile tempMob = new Mobile(xpos, -50, 50, 50, scrollSpeed, rnd.Next(1, 3));
             tempMob.LoadContent(this.Content);
             mobList.Add(tempMob);
         }
@@ -121,10 +124,24 @@ namespace InfiniTag
 
             player1.Update(controls, gameTime);
 
+
+            // Mob update/ collision check loop
+            int playerX = player1.getX();
+            int playerY = player1.getY();
             for (int i = mobList.Count - 1; i >= 0; i--)
             {
                 mobList[i].Update(controls, gameTime);
-                if (mobList[i].getY() > 640)
+                int mobX = mobList[i].getX();
+                int mobY = mobList[i].getY();
+
+                //collision detection loop
+                if (collision(mobX, mobY, playerX, playerY, 37))
+                {
+                    // temporary collision code
+                    mobList.RemoveAt(i);
+                }
+                
+                else if (mobY > screenHeight)
                 {
                     mobList.RemoveAt(i);
                 }
@@ -149,10 +166,24 @@ namespace InfiniTag
                 m.Draw(spriteBatch);
             }
             player1.Draw(spriteBatch);
+
+
+
             spriteBatch.End();
 
             base.Draw(gameTime);
         }
+
+        // checks if two particles 1 and 2 come within distance d of each other.
+        // returns true if they do, else false.
+        private bool collision(int x1, int y1, int x2, int y2, int d)
+        {
+            if (((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) < d * d)
+                return true;
+            else
+                return false;
+        }
+
     }
 
 }

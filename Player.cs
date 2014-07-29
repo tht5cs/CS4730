@@ -32,8 +32,8 @@ namespace InfiniTag
 			pushing = false;
 
 			// Movement
-			speed = 10;
-			friction = .15;
+            speed = 8;
+            friction = .17;
 			x_accel = 0;
             y_accel = 0;
 			x_vel = 0;
