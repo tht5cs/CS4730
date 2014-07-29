@@ -27,6 +27,10 @@ namespace InfiniTag
         Double mobTimer;
         int scrollSpeed;
 
+
+
+        //HUD stuff
+        Texture2D RuleBar;
         private int score;
         private int time;
         private int meter;
@@ -35,6 +39,9 @@ namespace InfiniTag
         private int meterBlue;
         private int gameSounds;
         private int leaderBoard;
+
+        //HUD location information
+        private int ruleBarX = 5;
 
         private int screenWidth = 480;
         private int screenHeight = 640;
@@ -64,7 +71,7 @@ namespace InfiniTag
 
             mobTimer = 0;
             rnd = new Random();
-            player1 = new Player(50, 50, 50, 50);
+            player1 = new Player(screenWidth/2-25, screenHeight/2-25, 50, 50);
             mobList = new List<Mobile>();
             base.Initialize();
 
@@ -84,6 +91,8 @@ namespace InfiniTag
             spriteBatch = new SpriteBatch(GraphicsDevice);
             player1.LoadContent(this.Content);
             background.Initialize(Content, "bg1.jpg", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -scrollSpeed);
+
+            RuleBar = Content.Load<Texture2D>("Bar.png") as Texture2D;
             
             // TODO: use this.Content to load your game content here
         }
@@ -184,6 +193,8 @@ namespace InfiniTag
                         mobList.RemoveAt(i);
                     }
                 }
+                if (meter == 20)
+                    emptyMeters();
 
 
 
@@ -215,11 +226,44 @@ namespace InfiniTag
             }
             player1.Draw(spriteBatch);
 
+            drawRuleBar();
+
+
+
 
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        public void drawRuleBar()
+        {
+            //this is the background color of the bar
+            spriteBatch.Draw(RuleBar, new Rectangle(5, this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, 44), new Rectangle(0, 45, RuleBar.Width, 44), Color.Black);
+
+
+            //If the above clamp is changed then the (double)RuleCharge/x must also be modified.
+            //this is the stuff that will fill up the bar, might need to be modified for color coding (split up the bar itself?)
+            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX,
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterRed / 20)), 44),
+                 new Rectangle(0, 45, RuleBar.Width, 44), Color.Red);
+
+            int redMeterEndX = ruleBarX + (int)(RuleBar.Width / 2 * ((double)meterRed / 20));
+
+            spriteBatch.Draw(RuleBar, new Rectangle(redMeterEndX,
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterGreen / 20)), 44),
+                 new Rectangle(0, 45, RuleBar.Width, 44), Color.Green);
+
+            int greenMeterEndX = redMeterEndX + (int)(RuleBar.Width / 2 * ((double)meterGreen / 20));
+
+            spriteBatch.Draw(RuleBar, new Rectangle(greenMeterEndX,
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterBlue / 20)), 44),
+                 new Rectangle(0, 45, RuleBar.Width, 44), Color.Blue);
+
+            //This draws the border of the bar
+            spriteBatch.Draw(RuleBar, new Rectangle(5,
+                this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, 44), new Rectangle(0, 0, RuleBar.Width, 44), Color.White);
         }
 
         // checks if two particles 1 and 2 come within distance d of each other.
@@ -232,20 +276,25 @@ namespace InfiniTag
                 return false;
         }
 
+        public void emptyMeters()
+        {
+            meterRed = 0;
+            meterGreen = 0;
+            meterBlue = 0;
+            meter = 0;
+        }
+
         private void Reset()
         {
             for (int i = mobList.Count - 1; i >= 0; i--)
             {
             mobList.RemoveAt(i);
             }
-            player1.setX(screenWidth/2-50);
-            player1.setY(screenHeight/2-50);
+            player1.setX(screenWidth/2-25);
+            player1.setY(screenHeight/2-25);
             score = 0;
             time = 0;
-            meterRed = 0;
-            meterGreen = 0;
-            meterBlue = 0;
-            meter = 0;
+            emptyMeters();
         }
 
 
