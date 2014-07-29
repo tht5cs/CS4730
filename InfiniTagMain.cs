@@ -146,6 +146,7 @@ namespace InfiniTag
                 //Up, down, left, right affect the coordinates of the sprite
 
                 player1.Update(controls, gameTime);
+                borderCheck();
 
 
                 // Mob update/ collision check loop
@@ -185,7 +186,6 @@ namespace InfiniTag
                                 gameOver = true;
                                 break;
                         }
-
                     }
 
                     else if (mobY > screenHeight)
@@ -276,7 +276,31 @@ namespace InfiniTag
                 return false;
         }
 
-        public void emptyMeters()
+        //this method keeps the player in the borders.
+        private void borderCheck()
+        {
+            int x = player1.getX();
+            int y = player1.getY();
+
+            if (x >= (screenWidth-50))
+            {
+                player1.setX(screenWidth-51);
+            }
+            if (x <= 0)
+            {
+                player1.setX(1);
+            }
+            if (y >= (screenHeight-50))
+            {
+                player1.setY(screenHeight-51);
+            }
+            if (y <= 0)
+            {
+                player1.setY(1);
+            }
+        }
+
+        private void emptyMeters()
         {
             meterRed = 0;
             meterGreen = 0;

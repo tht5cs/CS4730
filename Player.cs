@@ -71,9 +71,6 @@ namespace InfiniTag
 		public void Update(Controls controls, GameTime gameTime)
 		{
 			Move (controls);
-			/*
-            Jump (controls, gameTime);
-            */
 		}
 
         
@@ -129,47 +126,8 @@ namespace InfiniTag
 			spriteX += movedX;
             spriteY += movedY;
 
-            if (spriteX >= 430)
-            {
-                spriteX = 429;
-            }
-            if (spriteX <= 0)
-            {
-                spriteX = 1;
-            }
-            if (spriteY >= 590)
-            {
-                spriteY = 589;
-            }
-            if (spriteY <= 0)
-            {
-                spriteY = 1;
-            }
-
-			// Gravity
-            /*
-			if (!grounded)
-			{
-				y_vel += gravity;
-				if (y_vel > maxFallSpeed)
-					y_vel = maxFallSpeed;
-				spriteY += Convert.ToInt32(y_vel);
-			}
-			else
-			{
-				y_vel = 1;
-			}
-
-			grounded = false;
-            */
-			// Check up/down collisions, then left/right
-			checkCollisions();
-
 		}
 
-		private void checkCollisions()
-		{
-		}
 
         public void meterIsFull()
         {
@@ -186,22 +144,5 @@ namespace InfiniTag
             throw new System.NotImplementedException();
         }
 
-        /*
-		private void Jump(Controls controls, GameTime gameTime)
-		{
-			// Jump on button press
-			if (controls.onPress(Keys.Space, Buttons.A) && grounded)
-			{
-				y_vel = -11;
-				jumpPoint = (int)(gameTime.TotalGameTime.TotalMilliseconds);
-				grounded = false;
-			}
-
-			// Cut jump short on button release
-			else if (controls.onRelease(Keys.Space, Buttons.A) && y_vel < 0)
-			{
-				y_vel /= 2;
-			}
-		}  */
     }
 }
