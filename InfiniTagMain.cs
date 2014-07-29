@@ -34,7 +34,8 @@ namespace InfiniTag
         private int screenWidth = 480;
         private int screenHeight = 640;
 
-        private SpriteFont font;
+        private bool pause = false;
+
         public InfiniTagMain()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -107,47 +108,59 @@ namespace InfiniTag
         {
             //set our keyboardstate tracker update can change the gamestate on every cycle
             controls.Update();
-            background.Update(gameTime);
-
-            mobTimer += gameTime.ElapsedGameTime.TotalSeconds;
-            if (mobTimer > 0.5)
+            if (controls.onPress(Keys.Enter, Buttons.LeftShoulder))
             {
-                mobTimer = 0;
-                NewMobile();
+                pause = !pause;
             }
 
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            // TODO: Add your update logic here
-            //Up, down, left, right affect the coordinates of the sprite
-
-            player1.Update(controls, gameTime);
-
-
-            // Mob update/ collision check loop
-            int playerX = player1.getX();
-            int playerY = player1.getY();
-            for (int i = mobList.Count - 1; i >= 0; i--)
+            if (!pause)
             {
-                mobList[i].Update(controls, gameTime);
-                int mobX = mobList[i].getX();
-                int mobY = mobList[i].getY();
+                background.Update(gameTime);
 
-                //collision detection loop
-                if (collision(mobX, mobY, playerX, playerY, 37))
+                mobTimer += gameTime.ElapsedGameTime.TotalSeconds;
+                if (mobTimer > 0.5)
                 {
-                    // temporary collision code
-                    mobList.RemoveAt(i);
+                    mobTimer = 0;
+                    NewMobile();
                 }
-                
-                else if (mobY > screenHeight)
+
+                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                    Exit();
+
+                // TODO: Add your update logic here
+                //Up, down, left, right affect the coordinates of the sprite
+
+                player1.Update(controls, gameTime);
+
+
+                // Mob update/ collision check loop
+                int playerX = player1.getX();
+                int playerY = player1.getY();
+                for (int i = mobList.Count - 1; i >= 0; i--)
                 {
-                    mobList.RemoveAt(i);
+                    mobList[i].Update(controls, gameTime);
+                    int mobX = mobList[i].getX();
+                    int mobY = mobList[i].getY();
+
+                    //collision detection loop
+                    if (collision(mobX, mobY, playerX, playerY, 37))
+                    {
+                        // temporary collision code
+                        if (mobList[i].getId() == 1)
+                            mobList.RemoveAt(i);
+                        else
+                            mobList.RemoveAt(i);
+                    }
+
+                    else if (mobY > screenHeight)
+                    {
+                        mobList.RemoveAt(i);
+                    }
                 }
+
+                base.Update(gameTime);
+
             }
-
-            base.Update(gameTime);
         }
 
         /// <summary>

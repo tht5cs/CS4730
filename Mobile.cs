@@ -49,6 +49,10 @@ namespace InfiniTag
         {
             spriteY = y;
         }
+        public int getId()
+        {
+            return identity;
+        }
 
         public void LoadContent(ContentManager content)
         {
