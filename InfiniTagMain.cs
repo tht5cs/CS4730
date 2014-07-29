@@ -25,7 +25,7 @@ namespace InfiniTag
         ScrollBack background;
         Random rnd;
         Double mobTimer;
-        int scrollSpeed;
+        int scrollSpeed = 4;
 
         SpriteFont Font1;
 
@@ -75,7 +75,6 @@ namespace InfiniTag
         {
             // TODO: Add your initialization logic here
             background = new ScrollBack();
-            scrollSpeed = 3;
 
             mobTimer = 0;
             rnd = new Random();
@@ -148,7 +147,7 @@ namespace InfiniTag
                 if (time <= 0)
                     gameOver = true;
 
-                if (mobTimer > 0.5)
+                if (mobTimer > 0.2)
                 {
                     mobTimer = 0;
                     NewMobile();
@@ -212,8 +211,10 @@ namespace InfiniTag
                     }
                 }
                 if (meter == 20)
+                {
                     emptyMeters();
-
+                    player1.inv();
+                }
 
 
                 if (gameOver)
@@ -248,6 +249,8 @@ namespace InfiniTag
             drawTimeBar();
             drawScore();
 
+            if (pause)
+                drawPause();
 
 
             spriteBatch.End();
@@ -292,7 +295,30 @@ namespace InfiniTag
 
         public void drawTimeBar()
         {
+            /*
+            float gre;
+            float red;
+            if (time > 1.5)
+            {
+                gre = 255;
+                red = (float)(time * (255 / 1.5) - 505);
+            }
+            else
+            {
+                gre = (float)(505 - time * (255 / 1.5));
+                red = 255;
+            }
+            Color dyn = new Color(red,gre,0);
+            string ss = gre + " / " + red;
+            spriteBatch.DrawString(Font1, ss, scorePos, Color.Black);
+            */
             spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX + RuleBar.Width / 2, this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * (time / initialTime)), barThickness + 5), new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Yellow);
+        }
+
+        public void drawPause()
+        {
+            Vector2 pos = new Vector2(screenWidth/2-65, screenHeight/2-65);
+            spriteBatch.DrawString(Font1, "GAME PAUSED", pos, Color.Black);
         }
 
         // checks if two particles 1 and 2 come within distance d of each other.
@@ -319,9 +345,9 @@ namespace InfiniTag
             {
                 player1.setX(1);
             }
-            if (y >= (screenHeight-50))
+            if (y >= (screenHeight-100))
             {
-                player1.setY(screenHeight-51);
+                player1.setY(screenHeight-101);
             }
             if (y <= 0)
             {
@@ -349,6 +375,10 @@ namespace InfiniTag
             time = 0;
             emptyMeters();
             time = initialTime;
+
+            //Code for reversing mods
+            if (player1.isInverted())
+                player1.inv();
         }
 
 

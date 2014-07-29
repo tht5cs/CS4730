@@ -57,6 +57,15 @@ namespace InfiniTag
         {
             spriteY = y;
         }
+        public bool isInverted()
+        {
+            return invert;
+        }
+        public void inv()
+        {
+            invert = !invert;
+            speed = speed * -1;
+        }
 
         public void LoadContent(ContentManager content)
         {
