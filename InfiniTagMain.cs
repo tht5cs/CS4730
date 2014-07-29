@@ -94,7 +94,7 @@ namespace InfiniTag
         protected void NewMobile()
         {
             int xpos = rnd.Next(1, (screenWidth-51));
-            Mobile tempMob = new Mobile(xpos, -50, 50, 50, scrollSpeed, rnd.Next(1, 3));
+            Mobile tempMob = new Mobile(xpos, -50, 50, 50, scrollSpeed, rnd.Next(1, 8));
             tempMob.LoadContent(this.Content);
             mobList.Add(tempMob);
         }

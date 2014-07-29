@@ -16,6 +16,7 @@ namespace InfiniTag
         public int movedX;
         public int movedY;
         int identity; //controls color/obstacle identity
+        Color spriteColor = Color.White;
 
         public Mobile(int x, int y, int width, int height, int inSpeed, int id)
         {
@@ -60,6 +61,17 @@ namespace InfiniTag
             if (identity == 1)
             {
                 img = "prep2.png";
+                spriteColor = Color.Red;
+            }
+            else if (identity == 2)
+            {
+                img = "prep2.png";
+                spriteColor = Color.Green;
+            }
+            else if (identity == 3)
+            {
+                img = "prep2.png";
+                spriteColor = Color.Blue;
             }
             else
             {
@@ -81,7 +93,7 @@ namespace InfiniTag
 
         public void Draw(SpriteBatch sb)
         {
-            sb.Draw(image, new Rectangle(spriteX, spriteY, spriteWidth, spriteHeight), Color.White);
+            sb.Draw(image, new Rectangle(spriteX, spriteY, spriteWidth, spriteHeight), spriteColor);
         }
     }
 }
