@@ -136,6 +136,12 @@ namespace InfiniTag
             if (controls.onPress(Keys.Enter, Buttons.LeftShoulder))
             {
                 pause = !pause;
+                if (gameOver)
+                {
+                    Reset();
+                    gameOver = false;
+                    pause = false;
+                }
             }
 
             if (!(pause || gameOver))
@@ -210,18 +216,13 @@ namespace InfiniTag
                         mobList.RemoveAt(i);
                     }
                 }
-                if (meter == 20)
+                if (meter >= 20)
                 {
                     emptyMeters();
                     player1.inv();
                 }
 
 
-                if (gameOver)
-                {
-                    Reset();
-                    gameOver = false;
-                }
 
                 base.Update(gameTime);
 
@@ -251,6 +252,9 @@ namespace InfiniTag
 
             if (pause)
                 drawPause();
+
+            if (gameOver)
+                drawGameOver();
 
 
             spriteBatch.End();
@@ -295,30 +299,35 @@ namespace InfiniTag
 
         public void drawTimeBar()
         {
-            /*
-            float gre;
-            float red;
+            int gre = 0;
+            int red = 0;
+            
             if (time > 1.5)
             {
                 gre = 255;
-                red = (float)(time * (255 / 1.5) - 505);
+                red = 510 - (int)(time * 255 / 1.5);
             }
-            else
+            else if (time < 1.5)
             {
-                gre = (float)(505 - time * (255 / 1.5));
+                gre = (int)(time * 255 / 1.5);
                 red = 255;
             }
-            Color dyn = new Color(red,gre,0);
-            string ss = gre + " / " + red;
-            spriteBatch.DrawString(Font1, ss, scorePos, Color.Black);
-            */
-            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX + RuleBar.Width / 2, this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * (time / initialTime)), barThickness + 5), new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Yellow);
+
+            Color dyn = new Color(red, gre, 0, 255);
+
+            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX + RuleBar.Width / 2, this.Window.ClientBounds.Height - 50,
+                (int)(RuleBar.Width / 2 * (time / initialTime)), barThickness + 5), new Rectangle(0, 45, RuleBar.Width, barThickness), dyn);
         }
 
         public void drawPause()
         {
             Vector2 pos = new Vector2(screenWidth/2-65, screenHeight/2-65);
             spriteBatch.DrawString(Font1, "GAME PAUSED", pos, Color.Black);
+        }
+        public void drawGameOver()
+        {
+            Vector2 pos = new Vector2(screenWidth / 2 - 65, screenHeight / 2 - 65);
+            spriteBatch.DrawString(Font1, "GAME OVER", pos, Color.Black);
         }
 
         // checks if two particles 1 and 2 come within distance d of each other.
@@ -372,9 +381,10 @@ namespace InfiniTag
             player1.setX(screenWidth/2-25);
             player1.setY(screenHeight/2-25);
             score = 0;
-            time = 0;
             emptyMeters();
             time = initialTime;
+
+            player1.stop();
 
             //Code for reversing mods
             if (player1.isInverted())

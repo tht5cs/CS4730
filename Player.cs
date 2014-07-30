@@ -112,6 +112,8 @@ namespace InfiniTag
                     x_accel = 0;
                 if (right && left)
                     x_accel = 0;
+                if (!(right || left))
+                    x_accel = 0;
 
                 // Y axis Accelration
                 if (up)
@@ -123,6 +125,8 @@ namespace InfiniTag
                 else if (controls.onRelease(Keys.Down, Buttons.DPadDown))
                     y_accel = 0;
                 if (up && down)
+                    y_accel = 0;
+                if (!(up || down))
                     y_accel = 0;
             }
             
@@ -136,6 +140,15 @@ namespace InfiniTag
             spriteY += movedY;
 
 		}
+
+        //this method zeroes out all accelerations and velocities
+        public void stop()
+        {
+            x_accel = 0;
+            y_accel = 0;
+            x_vel = 0;
+            y_vel = 0;
+        }
 
 
         public void meterIsFull()
