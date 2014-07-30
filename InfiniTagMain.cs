@@ -301,15 +301,16 @@ namespace InfiniTag
         {
             int gre = 0;
             int red = 0;
+
             
-            if (time > 1.5)
+            if (time > initialTime/2)
             {
                 gre = 255;
-                red = 510 - (int)(time * 255 / 1.5);
+                red = 510 - (int)(time * 255 / (initialTime/2));
             }
-            else if (time < 1.5)
+            else if (time < initialTime/2)
             {
-                gre = (int)(time * 255 / 1.5);
+                gre = (int)(time * 255 / (initialTime / 2));
                 red = 255;
             }
 
