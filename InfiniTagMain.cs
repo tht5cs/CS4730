@@ -36,7 +36,7 @@ namespace InfiniTag
         private int score;
         private double initialTime = 3;
         private double time = 3;
-        private int maxMeter = 20;
+        private int maxMeter = 2;
         private int meter;
         private int meterRed;
         private int meterGreen;
@@ -416,7 +416,7 @@ namespace InfiniTag
         //returns 0 for red, 1 for  green, 2 for blue
         private int chooseRuleColor()
         {
-            int r = rnd.Next(1, maxMeter);
+            int r = rnd.Next(1, maxMeter+1);
             if (r <= meterRed)
                 return 0;
             if (r <= (meterRed+meterGreen))
@@ -441,7 +441,7 @@ namespace InfiniTag
 
         private void changeRuleRed()
         {
-            int r = rnd.Next(0, 0);
+            int r = rnd.Next(0, 1);
             switch (r)
             {
                 case 0: // invert player controls
@@ -454,7 +454,7 @@ namespace InfiniTag
         }
         private void changeRuleGreen()
         {
-            int r = rnd.Next(0, 0);
+            int r = rnd.Next(0, 3);
             switch (r)
             {
                 case 0: // rule
