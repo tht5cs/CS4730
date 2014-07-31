@@ -36,6 +36,7 @@ namespace InfiniTag
         private int score;
         private double initialTime = 3;
         private double time = 3;
+        private int maxMeter = 20;
         private int meter;
         private int meterRed;
         private int meterGreen;
@@ -56,6 +57,19 @@ namespace InfiniTag
 
         private bool pause = false;
         private bool gameOver = false;
+
+        //rule meters
+        bool[] rulesRed = new bool[1];
+        /*
+         * 1:inverts controls
+         */
+        bool[] rulesGreen = new bool[3];
+        /*
+         * 1:erases rule bar
+         * 2:erases time bar
+         * 3:erases score bar
+         */
+        bool[]rulesBlue = new bool[3];
 
         public InfiniTagMain()
         {
@@ -216,10 +230,10 @@ namespace InfiniTag
                         mobList.RemoveAt(i);
                     }
                 }
-                if (meter >= 20)
-                {
+                if (meter >= maxMeter)
+                {                    
+                    changeRule(chooseRuleColor());
                     emptyMeters();
-                    player1.inv();
                 }
 
 
@@ -246,9 +260,12 @@ namespace InfiniTag
             }
             player1.Draw(spriteBatch);
 
-            drawRuleBar();
-            drawTimeBar();
-            drawScore();
+            if (!rulesGreen[0])
+                drawRuleBar();
+            if (!rulesGreen[1])
+                drawTimeBar();
+            if (!rulesGreen[2])
+                drawScore();
 
             if (pause)
                 drawPause();
@@ -277,19 +294,19 @@ namespace InfiniTag
             //If the above clamp is changed then the (double)RuleCharge/x must also be modified.
             //this is the stuff that will fill up the bar, might need to be modified for color coding (split up the bar itself?)
             spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterRed / 20)), barThickness),
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterRed / maxMeter)), barThickness),
                  new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Red);
 
-            int redMeterEndX = ruleBarX + (int)(RuleBar.Width / 2 * ((double)meterRed / 20));
+            int redMeterEndX = ruleBarX + (int)(RuleBar.Width / 2 * ((double)meterRed / maxMeter));
 
             spriteBatch.Draw(RuleBar, new Rectangle(redMeterEndX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterGreen / 20)), barThickness),
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterGreen / maxMeter)), barThickness),
                  new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Green);
 
-            int greenMeterEndX = redMeterEndX + (int)(RuleBar.Width / 2 * ((double)meterGreen / 20));
+            int greenMeterEndX = redMeterEndX + (int)(RuleBar.Width / 2 * ((double)meterGreen / maxMeter));
 
             spriteBatch.Draw(RuleBar, new Rectangle(greenMeterEndX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterBlue / 20)), barThickness),
+                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterBlue / maxMeter)), barThickness),
                  new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Blue);
 
             //This draws the border of the bar
@@ -390,6 +407,73 @@ namespace InfiniTag
             //Code for reversing mods
             if (player1.isInverted())
                 player1.inv();
+            for (int i = 0; i < 3; i++)
+            {
+                rulesGreen[i] = false;
+            }
+        }
+
+        //returns 0 for red, 1 for  green, 2 for blue
+        private int chooseRuleColor()
+        {
+            int r = rnd.Next(1, maxMeter);
+            if (r <= meterRed)
+                return 0;
+            if (r <= (meterRed+meterGreen))
+                return 1;
+            return 2;
+        }
+        private void changeRule(int color)
+        {
+            switch(color)
+            {
+                case 0:
+                    changeRuleRed();
+                    break;
+                case 1:
+                    changeRuleGreen();
+                    break;
+                default:
+                    changeRuleBlue();
+                    break;
+            }
+        }
+
+        private void changeRuleRed()
+        {
+            int r = rnd.Next(0, 0);
+            switch (r)
+            {
+                case 0: // invert player controls
+                    rulesRed[0] = !rulesRed[0];
+                    player1.inv();
+                    break;
+                default:
+                    break;
+            }                
+        }
+        private void changeRuleGreen()
+        {
+            int r = rnd.Next(0, 0);
+            switch (r)
+            {
+                case 0: // rule
+                    rulesGreen[0] = !rulesGreen[0];
+                    break;
+                case 1: // time
+                    rulesGreen[1] = !rulesGreen[1];
+                    break;
+                case 2: // score
+                    rulesGreen[2] = !rulesGreen[2];
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void changeRuleBlue()
+        {
+
         }
 
 
