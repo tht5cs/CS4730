@@ -197,7 +197,7 @@ namespace InfiniTag
                 mobTimer += gameTime.ElapsedGameTime.TotalSeconds;
                 time -= gameTime.ElapsedGameTime.TotalSeconds;
                 if (time <= 0)
-                    gameOver = true;
+                    endGame();
 
                 if (mobTimer > 0.2)
                 {
@@ -231,7 +231,7 @@ namespace InfiniTag
                         switch(mobList[i].getId())
                         {
                             case 1:
-                                tagPing.Play();
+                                tagPing.Play(0.5f,0,0);
                                 mobList.RemoveAt(i);
                                 score += 500;
                                 meterRed++;
@@ -239,7 +239,7 @@ namespace InfiniTag
                                 time = initialTime;
                                 break;
                             case 2:
-                                tagPing.Play();
+                                tagPing.Play(0.5f, 0, 0);
                                 mobList.RemoveAt(i);
                                 score += 350;
                                 meterGreen++;
@@ -247,7 +247,7 @@ namespace InfiniTag
                                 time = initialTime;
                                 break;
                             case 3:
-                                tagPing.Play();
+                                tagPing.Play(0.5f, 0, 0);
                                 mobList.RemoveAt(i);
                                 score += 200;
                                 meterBlue++;
@@ -255,8 +255,7 @@ namespace InfiniTag
                                 time = initialTime;
                                 break;
                             default:
-                                gameOver = true;
-                                changeSong(gameOverSong);
+                                endGame();
                                 break;
                         }
                     }
@@ -277,6 +276,12 @@ namespace InfiniTag
                 base.Update(gameTime);
 
             }
+        }
+
+        public void endGame()
+        {
+            gameOver = true;
+            changeSong(gameOverSong);
         }
 
         /// <summary>
