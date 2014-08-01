@@ -79,6 +79,9 @@ namespace InfiniTag
         private Song themeForHarold;
         private Song georgeStreetShuffle;
         private Song funInABottle;
+        private Song gameOverSong;
+
+        private SoundEffect tagPing;
 
         public InfiniTagMain()
         {
@@ -112,11 +115,15 @@ namespace InfiniTag
         }
 
         //loads all of the songs
-        protected void LoadSongs()
+        protected void LoadSound()
         {
             themeForHarold = Content.Load<Song>("songs/Theme for Harold var 3.wav");
             georgeStreetShuffle = Content.Load<Song>("songs/George Street Shuffle.wav");
             funInABottle = Content.Load<Song>("songs/Fun in a Bottle.wav");
+            gameOverSong = Content.Load<Song>("songs/Cryptic Sorrow.wav");
+
+            //sfx
+            tagPing = Content.Load<SoundEffect>("sfx/tag ping.wav");
         }
 
 
@@ -135,7 +142,7 @@ namespace InfiniTag
 
             Font1 = Content.Load<SpriteFont>("font");
 
-            LoadSongs();
+            LoadSound();
             currSong = themeForHarold;
 
             
@@ -186,7 +193,7 @@ namespace InfiniTag
             if (!(pause || gameOver))
             {
                 background.Update(gameTime);
-
+                score += (int) (100*gameTime.ElapsedGameTime.TotalSeconds);
                 mobTimer += gameTime.ElapsedGameTime.TotalSeconds;
                 time -= gameTime.ElapsedGameTime.TotalSeconds;
                 if (time <= 0)
@@ -221,33 +228,35 @@ namespace InfiniTag
                     if (Collision(mobX, mobY, playerX, playerY, 37))
                     {
                         // temporary collision code
-                        //MediaPlayer.Play(currSong);
                         switch(mobList[i].getId())
                         {
                             case 1:
+                                tagPing.Play();
                                 mobList.RemoveAt(i);
-                                score++;
+                                score += 500;
                                 meterRed++;
                                 meter++;
                                 time = initialTime;
                                 break;
                             case 2:
+                                tagPing.Play();
                                 mobList.RemoveAt(i);
-                                score++;
+                                score += 350;
                                 meterGreen++;
                                 meter++;
                                 time = initialTime;
                                 break;
                             case 3:
+                                tagPing.Play();
                                 mobList.RemoveAt(i);
-                                score++;
+                                score += 200;
                                 meterBlue++;
                                 meter++;
                                 time = initialTime;
                                 break;
                             default:
                                 gameOver = true;
-                                MediaPlayer.Pause();
+                                changeSong(gameOverSong);
                                 break;
                         }
                     }
