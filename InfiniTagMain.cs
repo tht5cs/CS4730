@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Storage;
 using Tao.Sdl;
@@ -26,6 +28,7 @@ namespace InfiniTag
         Random rnd;
         Double mobTimer;
         int scrollSpeed = 4;
+        int spawnRate = 5;
 
         SpriteFont Font1;
 
@@ -36,7 +39,7 @@ namespace InfiniTag
         private int score;
         private double initialTime = 3;
         private double time = 3;
-        private int maxMeter = 2;
+        private int maxMeter = 20;
         private int meter;
         private int meterRed;
         private int meterGreen;
@@ -55,7 +58,7 @@ namespace InfiniTag
         private int screenWidth = 480;
         private int screenHeight = 640;
 
-        private bool pause = false;
+        private bool pause = true;
         private bool gameOver = false;
 
         //rule meters
@@ -70,6 +73,12 @@ namespace InfiniTag
          * 3:erases score bar
          */
         bool[]rulesBlue = new bool[3];
+
+        //sound
+        private Song currSong;
+        private Song themeForHarold;
+        private Song georgeStreetShuffle;
+        private Song funInABottle;
 
         public InfiniTagMain()
         {
@@ -102,6 +111,15 @@ namespace InfiniTag
 
         }
 
+        //loads all of the songs
+        protected void LoadSongs()
+        {
+            themeForHarold = Content.Load<Song>("songs/Theme for Harold var 3.wav");
+            georgeStreetShuffle = Content.Load<Song>("songs/George Street Shuffle.wav");
+            funInABottle = Content.Load<Song>("songs/Fun in a Bottle.wav");
+        }
+
+
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
@@ -116,6 +134,9 @@ namespace InfiniTag
             RuleBar = Content.Load<Texture2D>("Bar.png") as Texture2D;
 
             Font1 = Content.Load<SpriteFont>("font");
+
+            LoadSongs();
+            currSong = themeForHarold;
 
             
             // TODO: use this.Content to load your game content here
@@ -149,15 +170,19 @@ namespace InfiniTag
             controls.Update();
             if (controls.onPress(Keys.Enter, Buttons.LeftShoulder))
             {
+                if (pause == true)
+                    MediaPlayer.Play(currSong);
+                else
+                    MediaPlayer.Pause();
                 pause = !pause;
                 if (gameOver)
                 {
                     Reset();
                     gameOver = false;
                     pause = false;
+                    MediaPlayer.Play(currSong);
                 }
             }
-
             if (!(pause || gameOver))
             {
                 background.Update(gameTime);
@@ -196,6 +221,7 @@ namespace InfiniTag
                     if (Collision(mobX, mobY, playerX, playerY, 37))
                     {
                         // temporary collision code
+                        //MediaPlayer.Play(currSong);
                         switch(mobList[i].getId())
                         {
                             case 1:
@@ -221,6 +247,7 @@ namespace InfiniTag
                                 break;
                             default:
                                 gameOver = true;
+                                MediaPlayer.Pause();
                                 break;
                         }
                     }
@@ -411,6 +438,7 @@ namespace InfiniTag
             {
                 rulesGreen[i] = false;
             }
+            currSong = themeForHarold;
         }
 
         //returns 0 for red, 1 for  green, 2 for blue
@@ -473,9 +501,30 @@ namespace InfiniTag
 
         private void changeRuleBlue()
         {
-
+            MediaPlayer.Pause();
+            switch (rnd.Next(0,3))
+            {
+                case 0:
+                    changeSong(themeForHarold);
+                    break;
+                case 1:
+                    changeSong(georgeStreetShuffle);
+                    break;
+                case 2:
+                    changeSong(funInABottle);
+                    break;
+                default:
+                    break;
+            }
+            MediaPlayer.Play(currSong);
         }
 
+        private void changeSong(Song s)
+        {
+            MediaPlayer.Pause();
+            currSong = s;
+            MediaPlayer.Play(currSong);
+        }
 
         }
 
