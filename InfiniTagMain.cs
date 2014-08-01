@@ -37,9 +37,9 @@ namespace InfiniTag
         //HUD stuff
         Texture2D RuleBar;
         private int score;
-        private double initialTime = 3;
-        private double time = 3;
-        private int maxMeter = 20;
+        private double initialTime = 3.3;
+        private double time = 3.3;
+        private int maxMeter = 15;
         private int meter;
         private int meterRed;
         private int meterGreen;
@@ -161,7 +161,7 @@ namespace InfiniTag
         protected void NewMobile()
         {
             int xpos = rnd.Next(1, (screenWidth-51));
-            Mobile tempMob = new Mobile(xpos, -50, 50, 50, scrollSpeed, rnd.Next(1, 8));
+            Mobile tempMob = new Mobile(xpos, -50, 50, 50, scrollSpeed, rnd.Next(1, 7));
             tempMob.LoadContent(this.Content);
             mobList.Add(tempMob);
         }
@@ -225,7 +225,7 @@ namespace InfiniTag
                     int mobY = mobList[i].getY();
 
                     //collision detection loop
-                    if (Collision(mobX, mobY, playerX, playerY, 37))
+                    if (Collision(mobX, mobY, playerX, playerY, 32))
                     {
                         // temporary collision code
                         switch(mobList[i].getId())
@@ -281,6 +281,7 @@ namespace InfiniTag
         public void endGame()
         {
             gameOver = true;
+            rulesGreen[2] = false;
             changeSong(gameOverSong);
         }
 
