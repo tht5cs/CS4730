@@ -20,8 +20,6 @@ namespace InfiniTag
 		public int movedX;
         public int movedY;
 		private bool pushing;
-
-        private bool invert = false;
         
         public Player(int x, int y, int width, int height)
         {
@@ -42,6 +40,11 @@ namespace InfiniTag
             movedY = 0;
         }
 
+        public int getSpeed()
+        {
+            return speed;
+        }
+
         public int getX(){
             return spriteX;
         }
@@ -57,14 +60,13 @@ namespace InfiniTag
         {
             spriteY = y;
         }
-        public bool isInverted()
+        public void setXAccel(int x)
         {
-            return invert;
+            x_accel = x;
         }
-        public void inv()
+        public void setYAccel(int y)
         {
-            invert = !invert;
-            speed = speed * -1;
+            y_accel = y;
         }
 
         public void LoadContent(ContentManager content)
@@ -86,50 +88,6 @@ namespace InfiniTag
 
 		public void Move(Controls controls)
 		{
-            if (controls.onPress(Keys.M, Buttons.LeftShoulder))
-            {
-                invert = !invert;
-                speed = speed * -1;
-                
-            }
-
-            if (spriteX < 430 || spriteX > 0 || spriteY > 0 || spriteY < 590)
-            {
-
-                // Sideways Acceleration
-                bool right = controls.isHeld(Keys.Right, Buttons.DPadRight);
-                bool left = controls.isHeld(Keys.Left, Buttons.DPadLeft);
-                bool up = controls.isHeld(Keys.Up, Buttons.DPadUp);
-                bool down = controls.isHeld(Keys.Down, Buttons.DPadDown);
-
-                if (right)
-                    x_accel = speed;
-                else if (controls.onRelease(Keys.Right, Buttons.DPadRight))
-                    x_accel = 0;
-                if (left)
-                    x_accel = -speed;
-                else if (controls.onRelease(Keys.Left, Buttons.DPadLeft))
-                    x_accel = 0;
-                if (right && left)
-                    x_accel = 0;
-                if (!(right || left))
-                    x_accel = 0;
-
-                // Y axis Accelration
-                if (up)
-                    y_accel = -speed;
-                else if (controls.onRelease(Keys.Up, Buttons.DPadUp))
-                    y_accel = 0;
-                if (down)
-                    y_accel = speed;
-                else if (controls.onRelease(Keys.Down, Buttons.DPadDown))
-                    y_accel = 0;
-                if (up && down)
-                    y_accel = 0;
-                if (!(up || down))
-                    y_accel = 0;
-            }
-            
 			double playerFriction = pushing ? (friction * 3) : friction;
 			x_vel = x_vel * (1 - playerFriction) + x_accel * .10;
             y_vel = y_vel * (1 - playerFriction) + y_accel * .10;

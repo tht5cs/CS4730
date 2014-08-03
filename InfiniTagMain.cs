@@ -62,7 +62,7 @@ namespace InfiniTag
         private bool gameOver = false;
 
         //rule meters
-        bool[] rulesRed = new bool[1];
+        bool[] rulesRed = new bool[3];
         /*
          * 1:inverts controls
          */
@@ -175,6 +175,8 @@ namespace InfiniTag
         {
             //set our keyboardstate tracker update can change the gamestate on every cycle
             controls.Update();
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
             if (controls.onPress(Keys.Enter, Buttons.LeftShoulder))
             {
                 if (pause == true)
@@ -205,12 +207,12 @@ namespace InfiniTag
                     NewMobile();
                 }
 
-                if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                    Exit();
+                
 
                 // TODO: Add your update logic here
                 //Up, down, left, right affect the coordinates of the sprite
 
+                processMovementInput(controls);
                 player1.Update(controls, gameTime);
                 borderCheck();
 
@@ -447,8 +449,14 @@ namespace InfiniTag
             player1.stop();
 
             //Code for reversing mods
+            /*
             if (player1.isInverted())
                 player1.inv();
+             * */
+            for (int i = 0; i < 3; i++)
+            {
+                rulesRed[i] = false;
+            }
             for (int i = 0; i < 3; i++)
             {
                 rulesGreen[i] = false;
@@ -484,34 +492,13 @@ namespace InfiniTag
 
         private void changeRuleRed()
         {
-            int r = rnd.Next(0, 1);
-            switch (r)
-            {
-                case 0: // invert player controls
-                    rulesRed[0] = !rulesRed[0];
-                    player1.inv();
-                    break;
-                default:
-                    break;
-            }                
+            int r = rnd.Next(0, 3);
+            rulesRed[r] = !rulesRed[r];            
         }
         private void changeRuleGreen()
         {
             int r = rnd.Next(0, 3);
-            switch (r)
-            {
-                case 0: // rule
-                    rulesGreen[0] = !rulesGreen[0];
-                    break;
-                case 1: // time
-                    rulesGreen[1] = !rulesGreen[1];
-                    break;
-                case 2: // score
-                    rulesGreen[2] = !rulesGreen[2];
-                    break;
-                default:
-                    break;
-            }
+            rulesGreen[r] = !rulesGreen[r];
         }
 
         private void changeRuleBlue()
@@ -539,6 +526,69 @@ namespace InfiniTag
             MediaPlayer.Pause();
             currSong = s;
             MediaPlayer.Play(currSong);
+        }
+
+        private void processMovementInput(Controls controls)
+        {
+            // the player's x and y position
+            int pX = player1.getX();
+            int pY = player1.getY();
+            // hte player's x and Y speed
+            int pXS = player1.getSpeed();
+            int pYS = player1.getSpeed();
+
+            if (rulesRed[1] == true)
+            {
+                pXS = -pXS;
+            }
+            if (rulesRed[2] == true)
+            {
+                pYS = -pYS;
+            }
+            if (pX < (screenWidth-50) || pX > 0 || pX > 0 || pX < (screenHeight-50))
+            {
+
+                // Sideways Acceleration
+                bool right = controls.isHeld(Keys.Right, Buttons.DPadRight);
+                bool left = controls.isHeld(Keys.Left, Buttons.DPadLeft);
+                bool up = controls.isHeld(Keys.Up, Buttons.DPadUp);
+                bool down = controls.isHeld(Keys.Down, Buttons.DPadDown);
+
+                if (rulesRed[0] == true)
+                {
+                    right = controls.isHeld(Keys.D, Buttons.DPadRight);
+                    left = controls.isHeld(Keys.A, Buttons.DPadLeft);
+                    up = controls.isHeld(Keys.W, Buttons.DPadUp);
+                    down = controls.isHeld(Keys.S, Buttons.DPadDown);
+                }
+
+                if (right)
+                    player1.setXAccel(pXS);
+                else if (controls.onRelease(Keys.Right, Buttons.DPadRight))
+                    player1.setXAccel(0);
+                if (left)
+                    player1.setXAccel(-pXS);
+                else if (controls.onRelease(Keys.Left, Buttons.DPadLeft))
+                    player1.setXAccel(0);
+                if (right && left)
+                    player1.setXAccel(0);
+                if (!(right || left))
+                    player1.setXAccel(0);
+
+                // Y axis Accelration
+                if (up)
+                    player1.setYAccel(-pYS);
+                else if (controls.onRelease(Keys.Up, Buttons.DPadUp))
+                    player1.setYAccel(0);
+                if (down)
+                    player1.setYAccel(pYS);
+                else if (controls.onRelease(Keys.Down, Buttons.DPadDown))
+                    player1.setYAccel(0);
+                if (up && down)
+                    player1.setYAccel(0);
+                if (!(up || down))
+                    player1.setYAccel(0);
+            }
         }
 
         }
