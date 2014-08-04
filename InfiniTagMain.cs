@@ -49,7 +49,7 @@ namespace InfiniTag
         //Change warning stuff
         private double changeDelay = 4;
         private double delayTimer = -2;
-        Vector2 warningPos = new Vector2(50, 50);
+        Vector2 warningPos = new Vector2(5, 550);
 
         //HUD location information
         private int ruleBarX = 5;
@@ -84,7 +84,7 @@ namespace InfiniTag
          */
         string[] rulesRedText = 
         {
-            "WASD remapped controls",
+            "WASD controls",
             "left-right inversion",
             "up-down inversion"
         };
@@ -182,7 +182,7 @@ namespace InfiniTag
 
             RuleBar = Content.Load<Texture2D>("Bar.png") as Texture2D;
 
-            Font1 = Content.Load<SpriteFont>("font");
+            Font1 = Content.Load<SpriteFont>("JSM");
 
             LoadSound();
             currSong = themeForHarold;
@@ -606,7 +606,7 @@ namespace InfiniTag
                     break;
                 case 1:
                     warningColor = Color.Green;
-                    if (rulesRed[rule] == false)
+                    if (rulesGreen[rule] == false)
                         onOrOff = "off";
                     warningText = rulesGreenText[rule] +" "+ onOrOff;
                     break;

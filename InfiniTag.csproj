@@ -121,7 +121,7 @@
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
     <None Include="ClassDiagram2.cd" />
-    <Content Include="Content\font.xnb">
+    <Content Include="Content\JSM.xnb">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="InfiniTag_TemporaryKey.pfx" />
