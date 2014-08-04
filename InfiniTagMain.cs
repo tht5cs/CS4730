@@ -38,7 +38,7 @@ namespace InfiniTag
         Texture2D RuleBar;
         private int score;
         private double initialTime = 3.3;
-        private double time = 3.3;
+        private double time;
         private int maxMeter = 15;
         private int meter;
         private int meterRed;
@@ -46,6 +46,12 @@ namespace InfiniTag
         private int meterBlue;
         private int gameSounds;
         private int leaderBoard;
+
+        //Change warning stuff
+        private double changeDelay = 4;
+        private double delayTimer = -2;
+        private string changeMessage = "";
+        Vector2 warningPos = new Vector2(50, 50);
 
         //HUD location information
         private int ruleBarX = 5;
@@ -61,10 +67,18 @@ namespace InfiniTag
         private bool pause = true;
         private bool gameOver = false;
 
-        //rule meters
+        //rule meters and things
+        private int redChangeCount = 3;
+        private int greenChangeCount = 3;
+        private int blueChangeCount = 3;
+        private int ruleColorIndex = 0;
+        private int ruleIndex = 0;
+
         bool[] rulesRed = new bool[3];
         /*
-         * 1:inverts controls
+         * 1: WASD remapping
+         * 2: left-right inversion
+         * 3: up-down inversion
          */
         bool[] rulesGreen = new bool[3];
         /*
@@ -102,7 +116,7 @@ namespace InfiniTag
             // TODO: Add your initialization logic here
             background = new ScrollBack();
 
-            mobTimer = 0;
+            
             rnd = new Random();
             player1 = new Player(screenWidth/2-25, screenHeight/2-25, 50, 50);
             mobList = new List<Mobile>();
@@ -111,6 +125,13 @@ namespace InfiniTag
             Joystick.Init();
             Console.WriteLine("Number of joysticks: " + Sdl.SDL_NumJoysticks());
             controls = new Controls();
+
+            mobTimer = 0;
+            time = initialTime;
+
+            MediaPlayer.Play(currSong);
+            MediaPlayer.Pause();
+
 
         }
 
@@ -175,27 +196,15 @@ namespace InfiniTag
         {
             //set our keyboardstate tracker update can change the gamestate on every cycle
             controls.Update();
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-            if (controls.onPress(Keys.Enter, Buttons.LeftShoulder))
-            {
-                if (pause == true)
-                    MediaPlayer.Play(currSong);
-                else
-                    MediaPlayer.Pause();
-                pause = !pause;
-                if (gameOver)
-                {
-                    Reset();
-                    gameOver = false;
-                    pause = false;
-                    MediaPlayer.Play(currSong);
-                }
-            }
+
+            processUtilInput(controls);
+
             if (!(pause || gameOver))
             {
                 background.Update(gameTime);
                 score += (int) (100*gameTime.ElapsedGameTime.TotalSeconds);
+                if (delayTimer > 0)
+                    delayTimer -= gameTime.ElapsedGameTime.TotalSeconds;
                 mobTimer += gameTime.ElapsedGameTime.TotalSeconds;
                 time -= gameTime.ElapsedGameTime.TotalSeconds;
                 if (time <= 0)
@@ -269,8 +278,16 @@ namespace InfiniTag
                 }
                 if (meter >= maxMeter)
                 {                    
-                    changeRule(chooseRuleColor());
+                    //changeRule(chooseRuleColor());
+                    ruleColorIndex = chooseRuleColor();
+                    ruleIndex = pickRule(ruleColorIndex);
+                    delayTimer = changeDelay;
                     emptyMeters();
+                }
+                if (delayTimer <= 0 && delayTimer > -1)
+                {
+                    changeRule(ruleColorIndex, ruleIndex);
+                    delayTimer = -2;
                 }
 
 
@@ -316,6 +333,9 @@ namespace InfiniTag
 
             if (gameOver)
                 drawGameOver();
+
+            if (delayTimer > 0)
+                spriteBatch.DrawString(Font1, changeMessage + (int)delayTimer, warningPos, Color.Black);
 
 
             spriteBatch.End();
@@ -443,16 +463,12 @@ namespace InfiniTag
             player1.setX(screenWidth/2-25);
             player1.setY(screenHeight/2-25);
             score = 0;
+            delayTimer = -2;
             emptyMeters();
             time = initialTime;
 
             player1.stop();
 
-            //Code for reversing mods
-            /*
-            if (player1.isInverted())
-                player1.inv();
-             * */
             for (int i = 0; i < 3; i++)
             {
                 rulesRed[i] = false;
@@ -474,46 +490,71 @@ namespace InfiniTag
                 return 1;
             return 2;
         }
-        private void changeRule(int color)
+
+        private int pickRule(int color)
         {
             switch(color)
             {
                 case 0:
-                    changeRuleRed();
+                    return rnd.Next(0, redChangeCount);
+                case 1:
+                    return rnd.Next(0, greenChangeCount);
+                case 2:
+                    return rnd.Next(0, blueChangeCount);
+                default:
+                    return 0;
+            }
+        }
+
+        private void changeRule(int color, int i)
+        {
+            switch(color)
+            {
+                case 0:
+                    changeRuleRed(i);
                     break;
                 case 1:
-                    changeRuleGreen();
+                    changeRuleGreen(i);
                     break;
                 default:
-                    changeRuleBlue();
+                    changeRuleBlue(i);
                     break;
             }
         }
 
-        private void changeRuleRed()
+        private void changeRuleRed(int i)
         {
             int r = rnd.Next(0, 3);
             rulesRed[r] = !rulesRed[r];            
         }
-        private void changeRuleGreen()
+        private void changeRuleGreen(int i)
         {
             int r = rnd.Next(0, 3);
             rulesGreen[r] = !rulesGreen[r];
         }
 
-        private void changeRuleBlue()
+        private void changeRuleBlue(int i)
         {
             MediaPlayer.Pause();
-            switch (rnd.Next(0,3))
+            switch (i)
             {
                 case 0:
-                    changeSong(themeForHarold);
+                    if (currSong != themeForHarold)
+                        changeSong(themeForHarold);
+                    else
+                        changeRuleBlue(i + 1);
                     break;
                 case 1:
-                    changeSong(georgeStreetShuffle);
+                    if (currSong != georgeStreetShuffle)
+                        changeSong(georgeStreetShuffle);
+                    else
+                        changeRuleBlue(i + 1);
                     break;
                 case 2:
-                    changeSong(funInABottle);
+                    if (currSong != funInABottle)
+                        changeSong(funInABottle);
+                    else
+                        changeRuleBlue(i + 1);
                     break;
                 default:
                     break;
@@ -588,6 +629,27 @@ namespace InfiniTag
                     player1.setYAccel(0);
                 if (!(up || down))
                     player1.setYAccel(0);
+            }
+        }
+
+        private void processUtilInput(Controls controls)
+        {
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
+            if (controls.onPress(Keys.Enter, Buttons.LeftShoulder))
+            {
+                if (pause == true)
+                    MediaPlayer.Resume();
+                else
+                    MediaPlayer.Pause();
+                pause = !pause;
+                if (gameOver)
+                {
+                    Reset();
+                    gameOver = false;
+                    pause = false;
+                    MediaPlayer.Play(currSong);
+                }
             }
         }
 
