@@ -1,7 +1,6 @@
 ﻿#region Using Statements
 using System;
 using System.Collections.Generic;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -50,7 +49,6 @@ namespace InfiniTag
         //Change warning stuff
         private double changeDelay = 4;
         private double delayTimer = -2;
-        private string changeMessage = "";
         Vector2 warningPos = new Vector2(50, 50);
 
         //HUD location information
@@ -74,19 +72,42 @@ namespace InfiniTag
         private int ruleColorIndex = 0;
         private int ruleIndex = 0;
 
+        //warning  text parameters
+        private Color warningColor = Color.White;
+        private String warningText = "";
+
         bool[] rulesRed = new bool[3];
         /*
          * 1: WASD remapping
          * 2: left-right inversion
          * 3: up-down inversion
          */
+        string[] rulesRedText = 
+        {
+            "WASD remapped controls",
+            "left-right inversion",
+            "up-down inversion"
+        };
         bool[] rulesGreen = new bool[3];
         /*
          * 1:erases rule bar
          * 2:erases time bar
          * 3:erases score bar
          */
+        string[] rulesGreenText = 
+        {
+            "Rule Bar",
+            "Time Bar",
+            "Score Count"
+        };
+
         bool[]rulesBlue = new bool[3];
+        string[] rulesBlueText = 
+        {
+            "Theme for Harold var 3",
+            "George Street Shuffle",
+            "Fun in a Bottle"
+        };
 
         //sound
         private Song currSong;
@@ -282,6 +303,7 @@ namespace InfiniTag
                     ruleColorIndex = chooseRuleColor();
                     ruleIndex = pickRule(ruleColorIndex);
                     delayTimer = changeDelay;
+                    setWarningText(ruleColorIndex, ruleIndex);
                     emptyMeters();
                 }
                 if (delayTimer <= 0 && delayTimer > -1)
@@ -335,7 +357,7 @@ namespace InfiniTag
                 drawGameOver();
 
             if (delayTimer > 0)
-                spriteBatch.DrawString(Font1, changeMessage + (int)delayTimer, warningPos, Color.Black);
+                spriteBatch.DrawString(Font1, warningText + " in: " +(int)delayTimer, warningPos, warningColor);
 
 
             spriteBatch.End();
@@ -500,7 +522,27 @@ namespace InfiniTag
                 case 1:
                     return rnd.Next(0, greenChangeCount);
                 case 2:
-                    return rnd.Next(0, blueChangeCount);
+                    int r = rnd.Next(0, blueChangeCount);
+                    switch (r)
+                    {
+                        case 0:
+                            if (currSong != themeForHarold)
+                                return r;
+                            else
+                                return r + 1;
+                        case 1:
+                            if (currSong != georgeStreetShuffle)
+                                return r;
+                            else
+                                return r + 1;
+                        case 2:
+                            if (currSong != funInABottle)
+                                return r;
+                            else
+                                return 0;
+                        default:
+                            return 0;
+                    }
                 default:
                     return 0;
             }
@@ -524,13 +566,11 @@ namespace InfiniTag
 
         private void changeRuleRed(int i)
         {
-            int r = rnd.Next(0, 3);
-            rulesRed[r] = !rulesRed[r];            
+            rulesRed[i] = !rulesRed[i];            
         }
         private void changeRuleGreen(int i)
         {
-            int r = rnd.Next(0, 3);
-            rulesGreen[r] = !rulesGreen[r];
+            rulesGreen[i] = !rulesGreen[i];
         }
 
         private void changeRuleBlue(int i)
@@ -539,27 +579,44 @@ namespace InfiniTag
             switch (i)
             {
                 case 0:
-                    if (currSong != themeForHarold)
-                        changeSong(themeForHarold);
-                    else
-                        changeRuleBlue(i + 1);
+                    changeSong(themeForHarold);
                     break;
                 case 1:
-                    if (currSong != georgeStreetShuffle)
-                        changeSong(georgeStreetShuffle);
-                    else
-                        changeRuleBlue(i + 1);
+                    changeSong(georgeStreetShuffle);
                     break;
                 case 2:
-                    if (currSong != funInABottle)
-                        changeSong(funInABottle);
-                    else
-                        changeRuleBlue(i + 1);
+                    changeSong(funInABottle);
                     break;
                 default:
                     break;
             }
             MediaPlayer.Play(currSong);
+        }
+
+        private void setWarningText(int color, int rule)
+        {
+            string onOrOff = "on";
+            switch (color)
+            {
+                case 0:
+                    warningColor = Color.Red;
+                    if (rulesRed[rule] == true)
+                        onOrOff = "off";
+                    warningText = rulesRedText[rule] + " " + onOrOff;
+                    break;
+                case 1:
+                    warningColor = Color.Green;
+                    if (rulesRed[rule] == false)
+                        onOrOff = "off";
+                    warningText = rulesGreenText[rule] +" "+ onOrOff;
+                    break;
+                case 2:
+                    warningColor = Color.Blue;
+                    warningText = rulesBlueText[rule];
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void changeSong(Song s)
