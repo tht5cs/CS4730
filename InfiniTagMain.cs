@@ -27,15 +27,17 @@ namespace InfiniTag
         Random rnd;
         Double mobTimer;
         int scrollSpeed = 4;
-        int spawnRate = 5;
+        double spawnRate = 5;
 
-        SpriteFont Font1;
+        
 
 
 
         //HUD stuff
         Texture2D RuleBar;
+        SpriteFont Font1;
         private int score;
+        private double scoreMultiplier = 1;
         private double initialTime = 3.3;
         private double time;
         private int maxMeter = 15;
@@ -49,15 +51,20 @@ namespace InfiniTag
         //Change warning stuff
         private double changeDelay = 4;
         private double delayTimer = -2;
-        Vector2 warningPos = new Vector2(5, 550);
+        Vector2 warningPos;
 
         //HUD location information
-        private int ruleBarX = 5;
-        int barThickness = 35;
+        private int borderSpacing = 5;
+        private int barY = 0;
+
+        private int timeBarX = 0;
+
+        int barLength;
+        int barThickness = 20;
 
 
 
-        Vector2 scorePos = new Vector2(10, 10);
+        Vector2 scorePos;
 
         private int screenWidth = 480;
         private int screenHeight = 640;
@@ -66,9 +73,6 @@ namespace InfiniTag
         private bool gameOver = false;
 
         //rule meters and things
-        private int redChangeCount = 3;
-        private int greenChangeCount = 3;
-        private int blueChangeCount = 3;
         private int ruleColorIndex = 0;
         private int ruleIndex = 0;
 
@@ -76,29 +80,35 @@ namespace InfiniTag
         private Color warningColor = Color.White;
         private String warningText = "";
 
-        bool[] rulesRed = new bool[3];
+        bool[] rulesRed = new bool[5];
         /*
-         * 1: WASD remapping
-         * 2: left-right inversion
-         * 3: up-down inversion
+         * 0: WASD remapping
+         * 1: left-right inversion
+         * 2: up-down inversion
+         * 3: lethal borders
+         * 4: hyper speed
          */
         string[] rulesRedText = 
         {
             "WASD controls",
             "left-right inversion",
-            "up-down inversion"
+            "up-down inversion",
+            "lethal borders",
+            "Hyper Speed"
         };
-        bool[] rulesGreen = new bool[3];
+        bool[] rulesGreen = new bool[4];
         /*
-         * 1:erases rule bar
-         * 2:erases time bar
-         * 3:erases score bar
+         * 0:erases rule bar
+         * 1:erases time bar
+         * 2:erases score bar
+         * 3:no change warnings
          */
         string[] rulesGreenText = 
         {
             "Rule Bar",
             "Time Bar",
-            "Score Count"
+            "Score Count",
+            "Change Warnings"
         };
 
         bool[]rulesBlue = new bool[3];
@@ -150,9 +160,12 @@ namespace InfiniTag
             mobTimer = 0;
             time = initialTime;
 
+            adjustBars();
+            scorePos = new Vector2(borderSpacing, borderSpacing);
+            warningPos = new Vector2(borderSpacing, screenHeight - borderSpacing - barThickness - 30);
+
             MediaPlayer.Play(currSong);
             MediaPlayer.Pause();
-
 
         }
 
@@ -222,16 +235,20 @@ namespace InfiniTag
 
             if (!(pause || gameOver))
             {
+                double timePassed = gameTime.ElapsedGameTime.TotalSeconds;
+
                 background.Update(gameTime);
-                score += (int) (100*gameTime.ElapsedGameTime.TotalSeconds);
+                if (rulesRed[4])
+                    background.Update(gameTime);
+                score += (int) (100*timePassed*scoreMultiplier);
                 if (delayTimer > 0)
-                    delayTimer -= gameTime.ElapsedGameTime.TotalSeconds;
-                mobTimer += gameTime.ElapsedGameTime.TotalSeconds;
-                time -= gameTime.ElapsedGameTime.TotalSeconds;
+                    delayTimer -= timePassed;
+                mobTimer += timePassed;
+                time -= timePassed;
                 if (time <= 0)
                     endGame();
 
-                if (mobTimer > 0.2)
+                if (mobTimer > (1/spawnRate))
                 {
                     mobTimer = 0;
                     NewMobile();
@@ -243,6 +260,8 @@ namespace InfiniTag
                 //Up, down, left, right affect the coordinates of the sprite
 
                 processMovementInput(controls);
+                if (rulesRed[4])
+                    player1.Update(controls, gameTime);
                 player1.Update(controls, gameTime);
                 borderCheck();
 
@@ -252,6 +271,8 @@ namespace InfiniTag
                 int playerY = player1.getY();
                 for (int i = mobList.Count - 1; i >= 0; i--)
                 {
+                    if (rulesRed[4])
+                        mobList[i].Update(controls, gameTime);
                     mobList[i].Update(controls, gameTime);
                     int mobX = mobList[i].getX();
                     int mobY = mobList[i].getY();
@@ -265,7 +286,7 @@ namespace InfiniTag
                             case 1:
                                 tagPing.Play(0.5f,0,0);
                                 mobList.RemoveAt(i);
-                                score += 500;
+                                score += (int)(500 * scoreMultiplier);
                                 meterRed++;
                                 meter++;
                                 time = initialTime;
@@ -273,7 +294,7 @@ namespace InfiniTag
                             case 2:
                                 tagPing.Play(0.5f, 0, 0);
                                 mobList.RemoveAt(i);
-                                score += 350;
+                                score += (int)(350 * scoreMultiplier);
                                 meterGreen++;
                                 meter++;
                                 time = initialTime;
@@ -281,7 +302,7 @@ namespace InfiniTag
                             case 3:
                                 tagPing.Play(0.5f, 0, 0);
                                 mobList.RemoveAt(i);
-                                score += 200;
+                                score += (int)(200 * scoreMultiplier);
                                 meterBlue++;
                                 meter++;
                                 time = initialTime;
@@ -337,6 +358,10 @@ namespace InfiniTag
             // TODO: Add your drawing code here
             spriteBatch.Begin();
             background.Draw(spriteBatch);
+
+            if (rulesRed[3])
+                drawMovementBorder();
+
             foreach (Mobile m in mobList)
             {
                 m.Draw(spriteBatch);
@@ -349,6 +374,9 @@ namespace InfiniTag
                 drawTimeBar();
             if (!rulesGreen[2])
                 drawScore();
+            if (delayTimer > 0 && !rulesGreen[3])
+                spriteBatch.DrawString(Font1, warningText + " in: " + (int)delayTimer, warningPos, warningColor);
+            
 
             if (pause)
                 drawPause();
@@ -356,13 +384,16 @@ namespace InfiniTag
             if (gameOver)
                 drawGameOver();
 
-            if (delayTimer > 0)
-                spriteBatch.DrawString(Font1, warningText + " in: " +(int)delayTimer, warningPos, warningColor);
-
-
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        public void adjustBars()
+        {
+            barY = screenHeight - barThickness - borderSpacing;
+            barLength = (screenWidth - 2 * borderSpacing) / 2;
+            timeBarX = screenWidth - barLength - borderSpacing;
         }
 
         public void drawScore()
@@ -371,33 +402,29 @@ namespace InfiniTag
             spriteBatch.DrawString(Font1, scoreString, scorePos, Color.Black);
         }
 
+        public void drawBar(int xPos, int yPos, int length, int thickness, Color color)
+        {
+            spriteBatch.Draw(RuleBar, new Rectangle(xPos, yPos, length, thickness), new Rectangle(0, 45, RuleBar.Width, RuleBar.Height), color);
+        }
+
+        public void drawBorder(int xPos, int yPos, int length, int thickness, Color color)
+        {
+            spriteBatch.Draw(RuleBar, new Rectangle(xPos, yPos, length, thickness), new Rectangle(0, 0, RuleBar.Width, RuleBar.Height/2), color);
+        }
+
         public void drawRuleBar()
         {
-            //this is the background color of the bar
-            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX, this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, barThickness+5), new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Black);
+            drawBar(borderSpacing, barY, (int)(barLength * ((double)meterRed / maxMeter)), barThickness, Color.Red);
 
+            int redMeterEndX = borderSpacing + (int)(barLength * ((double)meterRed / maxMeter));
 
-            //If the above clamp is changed then the (double)RuleCharge/x must also be modified.
-            //this is the stuff that will fill up the bar, might need to be modified for color coding (split up the bar itself?)
-            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterRed / maxMeter)), barThickness),
-                 new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Red);
+            drawBar(redMeterEndX, barY, (int)(barLength * ((double)meterGreen / maxMeter)), barThickness, Color.Green);
 
-            int redMeterEndX = ruleBarX + (int)(RuleBar.Width / 2 * ((double)meterRed / maxMeter));
+            int greenMeterEndX = redMeterEndX + (int)(barLength* ((double)meterGreen / maxMeter));
 
-            spriteBatch.Draw(RuleBar, new Rectangle(redMeterEndX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterGreen / maxMeter)), barThickness),
-                 new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Green);
+            drawBar(greenMeterEndX, barY, (int)(barLength * ((double)meterBlue / maxMeter)), barThickness, Color.Blue);
 
-            int greenMeterEndX = redMeterEndX + (int)(RuleBar.Width / 2 * ((double)meterGreen / maxMeter));
-
-            spriteBatch.Draw(RuleBar, new Rectangle(greenMeterEndX,
-                 this.Window.ClientBounds.Height - 50, (int)(RuleBar.Width / 2 * ((double)meterBlue / maxMeter)), barThickness),
-                 new Rectangle(0, 45, RuleBar.Width, barThickness), Color.Blue);
-
-            //This draws the border of the bar
-            spriteBatch.Draw(RuleBar, new Rectangle(5,
-                this.Window.ClientBounds.Height - 50, RuleBar.Width / 2, barThickness+5), new Rectangle(0, 0, RuleBar.Width, barThickness), Color.White);
+            drawBorder(borderSpacing, barY, barLength, barThickness, Color.Black);
         }
 
         public void drawTimeBar()
@@ -419,8 +446,18 @@ namespace InfiniTag
 
             Color dyn = new Color(red, gre, 0, 255);
 
-            spriteBatch.Draw(RuleBar, new Rectangle(ruleBarX + RuleBar.Width / 2, this.Window.ClientBounds.Height - 50,
-                (int)(RuleBar.Width / 2 * (time / initialTime)), barThickness + 5), new Rectangle(0, 45, RuleBar.Width, barThickness), dyn);
+            drawBar(timeBarX, barY, (int)(barLength * (time/initialTime)), barThickness, dyn);
+            drawBorder(timeBarX, barY, barLength, barThickness, Color.Black);
+        }
+
+        public void drawMovementBorder()
+        {
+            drawBar(0, 0, screenWidth, borderSpacing, Color.Red);
+            drawBar(0, screenHeight-borderSpacing-barThickness-5, screenWidth, borderSpacing, Color.Red);
+
+            drawBar(0, -50, borderSpacing, screenHeight - borderSpacing - barThickness - 5+50, Color.Red);
+            drawBar(screenWidth-borderSpacing, -50, borderSpacing, screenHeight - borderSpacing - barThickness - 5+50, Color.Red);
+
         }
 
         public void drawPause()
@@ -448,26 +485,41 @@ namespace InfiniTag
         private void borderCheck()
         {
             int x = player1.getX();
+            int xSize = player1.getSpriteWidth();
             int y = player1.getY();
+            int bottom = screenHeight - borderSpacing - barThickness - player1.getSpriteHeight();
 
-            if (x >= (screenWidth-50))
+            if (x >= (screenWidth-xSize))
             {
-                player1.setX(screenWidth-51);
+                if (rulesRed[3])
+                    endGame();
+                player1.setX(screenWidth - xSize - 1);
+                
             }
             if (x <= 0)
             {
+                if (rulesRed[3])
+                    endGame();
                 player1.setX(1);
+                
             }
-            if (y >= (screenHeight-100))
+            if (y >= bottom)
             {
-                player1.setY(screenHeight-101);
+                if (rulesRed[3])
+                    endGame();
+                player1.setY(bottom-1);
+                
             }
             if (y <= 0)
             {
+                if (rulesRed[3])
+                    endGame();
                 player1.setY(1);
+                
             }
         }
 
+        //sets all change meters to 0. Used in reset and new change.
         private void emptyMeters()
         {
             meterRed = 0;
@@ -476,6 +528,7 @@ namespace InfiniTag
             meter = 0;
         }
 
+        //Puts the game at a blank slate for a new game
         private void Reset()
         {
             for (int i = mobList.Count - 1; i >= 0; i--)
@@ -491,11 +544,11 @@ namespace InfiniTag
 
             player1.stop();
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < rulesRed.GetLength(0); i++)
             {
                 rulesRed[i] = false;
             }
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < rulesGreen.GetLength(0); i++)
             {
                 rulesGreen[i] = false;
             }
@@ -518,11 +571,11 @@ namespace InfiniTag
             switch(color)
             {
                 case 0:
-                    return rnd.Next(0, redChangeCount);
+                    return rnd.Next(0, rulesRed.GetLength(0));
                 case 1:
-                    return rnd.Next(0, greenChangeCount);
+                    return rnd.Next(0, rulesGreen.GetLength(0));
                 case 2:
-                    int r = rnd.Next(0, blueChangeCount);
+                    int r = rnd.Next(0, rulesBlueText.GetLength(0));
                     switch (r)
                     {
                         case 0:
@@ -630,7 +683,9 @@ namespace InfiniTag
         {
             // the player's x and y position
             int pX = player1.getX();
+            int xS = player1.getSpriteWidth();
             int pY = player1.getY();
+            int yS = player1.getSpriteHeight();
             // hte player's x and Y speed
             int pXS = player1.getSpeed();
             int pYS = player1.getSpeed();
@@ -643,7 +698,7 @@ namespace InfiniTag
             {
                 pYS = -pYS;
             }
-            if (pX < (screenWidth-50) || pX > 0 || pX > 0 || pX < (screenHeight-50))
+            if (pX < (screenWidth-xS) || pX > 0 || pX > 0 || pX < (screenHeight-yS))
             {
 
                 // Sideways Acceleration

@@ -14,6 +14,32 @@ namespace InfiniTag
 		protected int spriteWidth, spriteHeight;
 		protected Texture2D image;
 
+        public int getX()
+        {
+            return spriteX;
+        }
+        public int getY()
+        {
+            return spriteY;
+        }
+        public void setX(int x)
+        {
+            spriteX = x;
+        }
+        public void setY(int y)
+        {
+            spriteY = y;
+        }
+
+        public int getSpriteWidth()
+        {
+            return spriteWidth;
+        }
+        public int getSpriteHeight()
+        {
+            return spriteHeight;
+        }
+
 		public Sprite ()
 		{
 		}

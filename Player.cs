@@ -45,21 +45,6 @@ namespace InfiniTag
             return speed;
         }
 
-        public int getX(){
-            return spriteX;
-        }
-        public int getY()
-        {
-            return spriteY;
-        }
-        public void setX(int x)
-        {
-            spriteX = x;
-        }
-        public void setY(int y)
-        {
-            spriteY = y;
-        }
         public void setXAccel(int x)
         {
             x_accel = x;

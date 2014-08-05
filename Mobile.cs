@@ -34,22 +34,6 @@ namespace InfiniTag
             movedY = 0;
         }
 
-        public int getX()
-        {
-            return spriteX;
-        }
-        public int getY()
-        {
-            return spriteY;
-        }
-        public void setX(int x)
-        {
-            spriteX = x;
-        }
-        public void setY(int y)
-        {
-            spriteY = y;
-        }
         public int getId()
         {
             return identity;
