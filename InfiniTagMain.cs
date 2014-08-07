@@ -24,7 +24,6 @@ namespace InfiniTag
         List<Mobile> mobList;
         List<tempText> tempTextList;
         Controls controls;
-        ScrollBack background;
         Random rnd;
         Double mobTimer;
         int scrollSpeed = 4;
@@ -34,18 +33,24 @@ namespace InfiniTag
         Color green = Color.Lime;
         Color blue = Color.Blue;
 
+        ScrollBack background1;
+        ScrollBack background2;
+        Texture2D prep2;
+        Texture2D alien;
+        Texture2D box;
+        Texture2D sheet;
 
 
         //HUD stuff
-        Texture2D sheet;
+        
         Texture2D RuleBar;
         SpriteFont Font1;
         private int score;
 
         private double scoreMultiplier = 1;
-        private int baseRedScore = 500;
-        private int baseGreenScore = 350;
-        private int baseBlueScore = 200;
+        private int baseRedScore = 175;
+        private int baseGreenScore = 100;
+        private int baseBlueScore = 50;
         private double initialTime = 3.3;
         
         private double time;
@@ -107,19 +112,21 @@ namespace InfiniTag
             "Hyper Speed",
             "Persistent score popups"
         };
-        bool[] rulesGreen = new bool[4];
+        bool[] rulesGreen = new bool[5];
         /*
          * 0:erases rule bar
          * 1:erases time bar
          * 2:erases score bar
          * 3:no change warnings
+         * 4:space tileset
          */
         string[] rulesGreenText = 
         {
             "Rule Bar",
             "Time Bar",
             "Score Count",
-            "Change Warnings"
+            "Change Warnings",
+            "Earthly Illusions"
         };
 
         bool[]rulesBlue = new bool[3];
@@ -148,7 +155,6 @@ namespace InfiniTag
             graphics.PreferredBackBufferWidth = screenWidth;
             graphics.PreferredBackBufferHeight = screenHeight;
         }
-
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -158,7 +164,8 @@ namespace InfiniTag
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            background = new ScrollBack();
+            background1 = new ScrollBack();
+            background2 = new ScrollBack();
             sheet = Content.Load<Texture2D>("upSheet");
             
             rnd = new Random();
@@ -209,7 +216,12 @@ namespace InfiniTag
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             player1.LoadContent(this.Content);
-            background.Initialize(Content, "bgStreet.png", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -scrollSpeed);
+            background1.Initialize(Content, "bgStreet.png", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -scrollSpeed);
+            background2.Initialize(Content, "bgSpace.png", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -scrollSpeed);
+           
+            prep2 = Content.Load<Texture2D>("prep2.png") as Texture2D;
+            alien = Content.Load<Texture2D>("alien.png") as Texture2D;
+            box = Content.Load<Texture2D>("box_small.png") as Texture2D;
 
             RuleBar = Content.Load<Texture2D>("Bar.png") as Texture2D;
 
@@ -240,7 +252,10 @@ namespace InfiniTag
         {
             int xpos = rnd.Next(1, (screenWidth-51));
             Mobile tempMob = new Mobile(xpos, -50, 50, 50, scrollSpeed, rnd.Next(1, 7));
-            tempMob.LoadContent(this.Content);
+            if (tempMob.getId() < 4)
+                tempMob.setImages(prep2, prep2);
+            else
+                tempMob.setImages(box, alien);
             mobList.Add(tempMob);
         }
 
@@ -273,10 +288,15 @@ namespace InfiniTag
             {
                 double timePassed = gameTime.ElapsedGameTime.TotalSeconds;
 
-                background.Update(gameTime);
+                background1.Update(gameTime);
+                background2.Update(gameTime);
                 if (rulesRed[4])
-                    background.Update(gameTime);
-                score += (int) (100*timePassed*scoreMultiplier);
+                {
+                    background1.Update(gameTime);
+                    background2.Update(gameTime);
+                }
+
+                score += (int) (150*timePassed*scoreMultiplier);
                 if (delayTimer > 0)
                     delayTimer -= timePassed;
                 mobTimer += timePassed;
@@ -318,6 +338,7 @@ namespace InfiniTag
                     if (Collision(mobX, mobY, playerX, playerY, 40))
                     {
                         // temporary collision code
+                        scoreMultiplier = time;
                         switch(mobList[i].getId())
                         {
                             case 1:
@@ -413,19 +434,28 @@ namespace InfiniTag
 
             // TODO: Add your drawing code here
             spriteBatch.Begin();
-            background.Draw(spriteBatch);
+            if (!rulesGreen[4])
+                background1.Draw(spriteBatch);
+            else
+                background2.Draw(spriteBatch);
 
             if (rulesRed[3])
                 drawMovementBorder();
 
             foreach (Mobile m in mobList)
             {
-                m.Draw(spriteBatch);
+                if (!rulesGreen[4])
+                    m.Draw(spriteBatch);
+                else
+                    m.Draw2(spriteBatch);
             }
 
-            foreach (tempText t in tempTextList)
+            if (!pause && !gameOver)
             {
-                t.Draw(spriteBatch);
+                foreach (tempText t in tempTextList)
+                {
+                    t.Draw(spriteBatch);
+                }
             }
 
             player1.Draw(spriteBatch);
@@ -490,6 +520,7 @@ namespace InfiniTag
          */
         public void drawRuleBar()
         {
+            drawBar(borderSpacing, barY, barLength, barThickness, Color.Black);
             drawBar(borderSpacing, barY, (int)(barLength * ((double)meterRed / maxMeter)), barThickness, red);
 
             int redMeterEndX = borderSpacing + (int)(barLength * ((double)meterRed / maxMeter));
@@ -531,6 +562,7 @@ namespace InfiniTag
 
             Color dyn = new Color(red, gre, 0, 255);
 
+            drawBar(timeBarX, barY, barLength, barThickness, Color.Black);
             drawBar(timeBarX, barY, (int)(barLength * (time / initialTime)), barThickness, dyn);
             drawBorder(timeBarX, barY, barLength, barThickness, Color.Black);
         }

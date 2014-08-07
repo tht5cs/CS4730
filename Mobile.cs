@@ -10,6 +10,7 @@ namespace InfiniTag
 {
     class Mobile : Sprite
     {
+        protected Texture2D image2;
         private int speed;
         public double x_vel;
         public double y_vel;
@@ -64,6 +65,23 @@ namespace InfiniTag
 
             image = content.Load<Texture2D>(img);
         }
+        public void setImages(Texture2D img1, Texture2D img2)
+        {
+            if (identity == 1)
+            {
+                spriteColor = Color.Red;
+            }
+            else if (identity == 2)
+            {
+                spriteColor = Color.Lime;
+            }
+            else if (identity == 3)
+            {
+                spriteColor = Color.Blue;
+            }
+            image = img1;
+            image2 = img2;
+        }
 
         public void Update(Controls controls, GameTime gameTime)
         {
@@ -78,6 +96,10 @@ namespace InfiniTag
         public void Draw(SpriteBatch sb)
         {
             sb.Draw(image, new Rectangle(spriteX, spriteY, spriteWidth, spriteHeight), spriteColor);
+        }
+        public void Draw2(SpriteBatch sb)
+        {
+            sb.Draw(image2, new Rectangle(spriteX, spriteY, spriteWidth, spriteHeight), spriteColor);
         }
     }
 }
