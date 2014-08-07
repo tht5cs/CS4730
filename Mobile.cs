@@ -50,7 +50,7 @@ namespace InfiniTag
             else if (identity == 2)
             {
                 img = "prep2.png";
-                spriteColor = Color.Green;
+                spriteColor = Color.Lime;
             }
             else if (identity == 3)
             {
@@ -59,7 +59,7 @@ namespace InfiniTag
             }
             else
             {
-                img = "alien.png";
+                img = "box_small.png";
             }
 
             image = content.Load<Texture2D>(img);

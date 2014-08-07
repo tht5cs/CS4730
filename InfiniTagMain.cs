@@ -30,11 +30,14 @@ namespace InfiniTag
         int scrollSpeed = 4;
         double spawnRate = 5;
 
-        
+        Color red = Color.Red;
+        Color green = Color.Lime;
+        Color blue = Color.Blue;
 
 
 
         //HUD stuff
+        Texture2D sheet;
         Texture2D RuleBar;
         SpriteFont Font1;
         private int score;
@@ -135,6 +138,8 @@ namespace InfiniTag
         private Song gameOverSong;
 
         private SoundEffect tagPing;
+        private SoundEffect barFull;
+        private SoundEffect changeEnacted;
 
         public InfiniTagMain()
         {
@@ -154,10 +159,10 @@ namespace InfiniTag
         {
             // TODO: Add your initialization logic here
             background = new ScrollBack();
-
+            sheet = Content.Load<Texture2D>("upSheet");
             
             rnd = new Random();
-            player1 = new Player(screenWidth/2-25, screenHeight/2-25, 50, 50);
+            player1 = new Player(screenWidth/2-25, screenHeight/2-25, 50, 50, sheet, 1, 2);
             mobList = new List<Mobile>();
             tempTextList = new List<tempText>();
             base.Initialize();
@@ -188,6 +193,8 @@ namespace InfiniTag
 
             //sfx
             tagPing = Content.Load<SoundEffect>("sfx/tag ping.wav");
+            barFull = Content.Load<SoundEffect>("sfx/bell1.wav");
+            changeEnacted = Content.Load<SoundEffect>("sfx/bell3.wav");
         }
 
 
@@ -202,7 +209,7 @@ namespace InfiniTag
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             player1.LoadContent(this.Content);
-            background.Initialize(Content, "bg1.jpg", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -scrollSpeed);
+            background.Initialize(Content, "bgStreet.png", GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, -scrollSpeed);
 
             RuleBar = Content.Load<Texture2D>("Bar.png") as Texture2D;
 
@@ -260,6 +267,7 @@ namespace InfiniTag
             controls.Update();
 
             processUtilInput(controls);
+            processMovementInput(controls);
 
             if (!(pause || gameOver))
             {
@@ -287,7 +295,7 @@ namespace InfiniTag
                 // TODO: Add your update logic here
                 //Up, down, left, right affect the coordinates of the sprite
 
-                processMovementInput(controls);
+
                 if (rulesRed[4])
                     player1.Update(controls, gameTime);
                 player1.Update(controls, gameTime);
@@ -307,7 +315,7 @@ namespace InfiniTag
 
                     int tScore = 0;
                     //collision detection loop
-                    if (Collision(mobX, mobY, playerX, playerY, 32))
+                    if (Collision(mobX, mobY, playerX, playerY, 40))
                     {
                         // temporary collision code
                         switch(mobList[i].getId())
@@ -317,7 +325,7 @@ namespace InfiniTag
                                 mobList.RemoveAt(i);
                                 tScore = (int)(baseRedScore * scoreMultiplier);
                                 score += tScore;
-                                NewTempText(mobX, mobY, "+" + tScore, Color.Red);
+                                NewTempText(mobX, mobY, "+" + tScore, red);
                                 meterRed++;
                                 meter++;
                                 time = initialTime;
@@ -327,7 +335,7 @@ namespace InfiniTag
                                 mobList.RemoveAt(i);
                                 tScore = (int)(baseGreenScore * scoreMultiplier);
                                 score += tScore;
-                                NewTempText(mobX, mobY, "+" + tScore, Color.Green);
+                                NewTempText(mobX, mobY, "+" + tScore, Color.LimeGreen);
                                 meterGreen++;
                                 meter++;
                                 time = initialTime;
@@ -337,7 +345,7 @@ namespace InfiniTag
                                 mobList.RemoveAt(i);
                                 tScore = (int)(baseBlueScore * scoreMultiplier);
                                 score += tScore;
-                                NewTempText(mobX, mobY, "+" + tScore, Color.Blue);
+                                NewTempText(mobX, mobY, "+" + tScore, blue);
                                 meterBlue++;
                                 meter++;
                                 time = initialTime;
@@ -482,15 +490,15 @@ namespace InfiniTag
          */
         public void drawRuleBar()
         {
-            drawBar(borderSpacing, barY, (int)(barLength * ((double)meterRed / maxMeter)), barThickness, Color.Red);
+            drawBar(borderSpacing, barY, (int)(barLength * ((double)meterRed / maxMeter)), barThickness, red);
 
             int redMeterEndX = borderSpacing + (int)(barLength * ((double)meterRed / maxMeter));
 
-            drawBar(redMeterEndX, barY, (int)(barLength * ((double)meterGreen / maxMeter)), barThickness, Color.Green);
+            drawBar(redMeterEndX, barY, (int)(barLength * ((double)meterGreen / maxMeter)), barThickness, green);
 
             int greenMeterEndX = redMeterEndX + (int)(barLength* ((double)meterGreen / maxMeter));
 
-            drawBar(greenMeterEndX, barY, (int)(barLength * ((double)meterBlue / maxMeter)), barThickness, Color.Blue);
+            drawBar(greenMeterEndX, barY, (int)(barLength * ((double)meterBlue / maxMeter)), barThickness, blue);
 
             drawBorder(borderSpacing, barY, barLength, barThickness, Color.Black);
         }
@@ -504,13 +512,18 @@ namespace InfiniTag
             int gre = 0;
             int red = 0;
 
-            
-            if (time > initialTime/2)
+
+            if (time > initialTime * .75)
             {
-                gre = (int)(time * 255 / (initialTime / 2)) - 255;
-                red = 510 - (int)(time * 255 / (initialTime/2));
+                gre = 255;
+                red = 1020 - (int)(time * 255 / (initialTime / 4));
             }
-            else if (time < initialTime/2)
+            else if (time >= initialTime / 2 && time <= initialTime * .75)
+            {
+                red = 255;
+                gre = (int)(time * 255 / (initialTime / 4)) - 510;
+            }
+            else if (time < initialTime / 2)
             {
                 gre = 0;
                 red = 255;
@@ -518,7 +531,7 @@ namespace InfiniTag
 
             Color dyn = new Color(red, gre, 0, 255);
 
-            drawBar(timeBarX, barY, (int)(barLength * (time/initialTime)), barThickness, dyn);
+            drawBar(timeBarX, barY, (int)(barLength * (time / initialTime)), barThickness, dyn);
             drawBorder(timeBarX, barY, barLength, barThickness, Color.Black);
         }
 
@@ -529,11 +542,12 @@ namespace InfiniTag
          */
         public void drawMovementBorder()
         {
-            drawBar(0, 0, screenWidth, borderSpacing, Color.Red);
-            drawBar(0, screenHeight-borderSpacing-barThickness-5, screenWidth, borderSpacing, Color.Red);
+            int thisThickness = borderSpacing * 2;
+            drawBar(0, 0, screenWidth, thisThickness, red);
+            drawBar(0, screenHeight - thisThickness - barThickness - 5, screenWidth, thisThickness, red);
 
-            drawBar(0, -50, borderSpacing, screenHeight - borderSpacing - barThickness - 5+50, Color.Red);
-            drawBar(screenWidth-borderSpacing, -50, borderSpacing, screenHeight - borderSpacing - barThickness - 5+50, Color.Red);
+            drawBar(0, -50, thisThickness, screenHeight - thisThickness - barThickness - 5 + 50, red);
+            drawBar(screenWidth - thisThickness, -50, thisThickness, screenHeight - thisThickness - barThickness - 5 + 50, red);
 
         }
 
@@ -738,25 +752,26 @@ namespace InfiniTag
 
         private void setWarningText(int color, int rule)
         {
+            barFull.Play();
             string onOrOff = "on";
             switch (color)
             {
                 case 0:
-                    warningColor = Color.Red;
+                    warningColor = red;
                     if (rulesRed[rule] == true)
                         onOrOff = "off";
                     warningText = rulesRedText[rule] + " " + onOrOff;
                     centerWarning();
                     break;
                 case 1:
-                    warningColor = Color.Green;
+                    warningColor = green;
                     if (rulesGreen[rule] == false)
                         onOrOff = "off";
                     warningText = rulesGreenText[rule] +" "+ onOrOff;
                     centerWarning();
                     break;
                 case 2:
-                    warningColor = Color.Blue;
+                    warningColor = blue;
                     warningText = rulesBlueText[rule];
                     centerWarning();
                     break;
