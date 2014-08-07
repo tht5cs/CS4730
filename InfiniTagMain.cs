@@ -40,7 +40,7 @@ namespace InfiniTag
         private double scoreMultiplier = 1;
         private double initialTime = 3.3;
         private double time;
-        private int maxMeter = 15;
+        private int maxMeter = 10;
         private int meter;
         private int meterRed;
         private int meterGreen;
@@ -49,7 +49,7 @@ namespace InfiniTag
         private int leaderBoard;
 
         //Change warning stuff
-        private double changeDelay = 4;
+        private double changeDelay = 3;
         private double delayTimer = -2;
         Vector2 warningPos;
 
@@ -186,6 +186,8 @@ namespace InfiniTag
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
         /// </summary>
+        /// 
+        
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
@@ -202,7 +204,7 @@ namespace InfiniTag
 
             
             // TODO: use this.Content to load your game content here
-        }
+        } 
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -213,6 +215,11 @@ namespace InfiniTag
             // TODO: Unload any non ContentManager content here
         }
 
+        /*
+         * generates a random mobile (either person or obstacle)
+         * at a random location within the bounds of the screen.
+         * scaled to the "screenWidth" parameter.
+         */
         protected void NewMobile()
         {
             int xpos = rnd.Next(1, (screenWidth-51));
@@ -340,6 +347,11 @@ namespace InfiniTag
             }
         }
 
+        /*
+         * This method stops the game. Note that it only triggers 
+         * a game over, and doesn't reset any values. It also turns
+         * on score so the players can see it.
+         */
         public void endGame()
         {
             gameOver = true;
@@ -375,7 +387,7 @@ namespace InfiniTag
             if (!rulesGreen[2])
                 drawScore();
             if (delayTimer > 0 && !rulesGreen[3])
-                spriteBatch.DrawString(Font1, warningText + " in: " + (int)delayTimer, warningPos, warningColor);
+                spriteBatch.DrawString(Font1, warningText + ": " + (int)(delayTimer+1), warningPos, warningColor);
             
 
             if (pause)
@@ -389,6 +401,11 @@ namespace InfiniTag
             base.Draw(gameTime);
         }
 
+        /*
+         * Sets the position of the rule and time bars, scaled
+         * with screen size. Reliant on borderSpacing parameter.
+         * Bar length  relative to screen can be modified here.
+         */
         public void adjustBars()
         {
             barY = screenHeight - barThickness - borderSpacing;
@@ -401,17 +418,26 @@ namespace InfiniTag
             string scoreString = "Score: " + score;
             spriteBatch.DrawString(Font1, scoreString, scorePos, Color.Black);
         }
-
+        /*
+         * generic method for drawing a colored bar.
+         */
         public void drawBar(int xPos, int yPos, int length, int thickness, Color color)
         {
             spriteBatch.Draw(RuleBar, new Rectangle(xPos, yPos, length, thickness), new Rectangle(0, 45, RuleBar.Width, RuleBar.Height), color);
         }
 
+        /* 
+         * generic method for drawing a rectangular border.
+         */
         public void drawBorder(int xPos, int yPos, int length, int thickness, Color color)
         {
             spriteBatch.Draw(RuleBar, new Rectangle(xPos, yPos, length, thickness), new Rectangle(0, 0, RuleBar.Width, RuleBar.Height/2), color);
         }
 
+        /* draws the dynamically sized and colored rule bar.
+         * hardcoed to handle 3 colors. Sized to screen by the 
+         * adjustBars() method.
+         */
         public void drawRuleBar()
         {
             drawBar(borderSpacing, barY, (int)(barLength * ((double)meterRed / maxMeter)), barThickness, Color.Red);
@@ -427,6 +453,10 @@ namespace InfiniTag
             drawBorder(borderSpacing, barY, barLength, barThickness, Color.Black);
         }
 
+        /*
+         * draws a colored bar that drains with time.
+         * it fades from green to red based on how much time is left.
+         */
         public void drawTimeBar()
         {
             int gre = 0;
@@ -435,12 +465,12 @@ namespace InfiniTag
             
             if (time > initialTime/2)
             {
-                gre = 255;
+                gre = (int)(time * 255 / (initialTime / 2)) - 255;
                 red = 510 - (int)(time * 255 / (initialTime/2));
             }
             else if (time < initialTime/2)
             {
-                gre = (int)(time * 255 / (initialTime / 2));
+                gre = 0;
                 red = 255;
             }
 
@@ -450,6 +480,11 @@ namespace InfiniTag
             drawBorder(timeBarX, barY, barLength, barThickness, Color.Black);
         }
 
+        /*
+         * draws a red border to player movement around the screen.
+         * called while Lethal borders are on to signify the 
+         * danger zone.
+         */
         public void drawMovementBorder()
         {
             drawBar(0, 0, screenWidth, borderSpacing, Color.Red);
@@ -481,7 +516,11 @@ namespace InfiniTag
                 return false;
         }
 
-        //this method keeps the player in the borders.
+        /*
+         * this method keeps the player in the borders.
+         * it also triggers gameOver if Lethal borders 
+         * is on.
+         */
         private void borderCheck()
         {
             int x = player1.getX();
@@ -566,6 +605,9 @@ namespace InfiniTag
             return 2;
         }
 
+        /*
+         * sets new values for the upcoming rules.
+         */
         private int pickRule(int color)
         {
             switch(color)
@@ -744,6 +786,10 @@ namespace InfiniTag
             }
         }
 
+        /*
+         * This method is for handling all non movement
+         * controls that the player has access to. 
+         */
         private void processUtilInput(Controls controls)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
