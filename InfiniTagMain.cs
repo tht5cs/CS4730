@@ -22,6 +22,7 @@ namespace InfiniTag
         SpriteBatch spriteBatch;
         Player player1;
         List<Mobile> mobList;
+        List<tempText> tempTextList;
         Controls controls;
         ScrollBack background;
         Random rnd;
@@ -37,8 +38,13 @@ namespace InfiniTag
         Texture2D RuleBar;
         SpriteFont Font1;
         private int score;
+
         private double scoreMultiplier = 1;
+        private int baseRedScore = 500;
+        private int baseGreenScore = 350;
+        private int baseBlueScore = 200;
         private double initialTime = 3.3;
+        
         private double time;
         private int maxMeter = 10;
         private int meter;
@@ -80,13 +86,14 @@ namespace InfiniTag
         private Color warningColor = Color.White;
         private String warningText = "";
 
-        bool[] rulesRed = new bool[5];
+        bool[] rulesRed = new bool[6];
         /*
          * 0: WASD remapping
          * 1: left-right inversion
          * 2: up-down inversion
          * 3: lethal borders
          * 4: hyper speed
+         * 5: persistent score popups
          */
         string[] rulesRedText = 
         {
@@ -94,7 +101,8 @@ namespace InfiniTag
             "left-right inversion",
             "up-down inversion",
             "lethal borders",
-            "Hyper Speed"
+            "Hyper Speed",
+            "Persistent score popups"
         };
         bool[] rulesGreen = new bool[4];
         /*
@@ -151,6 +159,7 @@ namespace InfiniTag
             rnd = new Random();
             player1 = new Player(screenWidth/2-25, screenHeight/2-25, 50, 50);
             mobList = new List<Mobile>();
+            tempTextList = new List<tempText>();
             base.Initialize();
 
             Joystick.Init();
@@ -228,6 +237,18 @@ namespace InfiniTag
             mobList.Add(tempMob);
         }
 
+        //the x and y position of the mob removed. s is text to be printed.
+        protected void NewTempText(int x, int y, string s, Color c)
+        {
+            Vector2 pos = new Vector2(x , y );
+            tempText temp;
+            if (!rulesRed[5])
+                temp = new tempText(pos, s, 0.5, Font1, c);
+            else
+                temp = new tempText(pos, s, 30, Font1, c);
+            tempTextList.Add(temp);
+        }
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -284,6 +305,7 @@ namespace InfiniTag
                     int mobX = mobList[i].getX();
                     int mobY = mobList[i].getY();
 
+                    int tScore = 0;
                     //collision detection loop
                     if (Collision(mobX, mobY, playerX, playerY, 32))
                     {
@@ -293,7 +315,9 @@ namespace InfiniTag
                             case 1:
                                 tagPing.Play(0.5f,0,0);
                                 mobList.RemoveAt(i);
-                                score += (int)(500 * scoreMultiplier);
+                                tScore = (int)(baseRedScore * scoreMultiplier);
+                                score += tScore;
+                                NewTempText(mobX, mobY, "+" + tScore, Color.Red);
                                 meterRed++;
                                 meter++;
                                 time = initialTime;
@@ -301,7 +325,9 @@ namespace InfiniTag
                             case 2:
                                 tagPing.Play(0.5f, 0, 0);
                                 mobList.RemoveAt(i);
-                                score += (int)(350 * scoreMultiplier);
+                                tScore = (int)(baseGreenScore * scoreMultiplier);
+                                score += tScore;
+                                NewTempText(mobX, mobY, "+" + tScore, Color.Green);
                                 meterGreen++;
                                 meter++;
                                 time = initialTime;
@@ -309,7 +335,9 @@ namespace InfiniTag
                             case 3:
                                 tagPing.Play(0.5f, 0, 0);
                                 mobList.RemoveAt(i);
-                                score += (int)(200 * scoreMultiplier);
+                                tScore = (int)(baseBlueScore * scoreMultiplier);
+                                score += tScore;
+                                NewTempText(mobX, mobY, "+" + tScore, Color.Blue);
                                 meterBlue++;
                                 meter++;
                                 time = initialTime;
@@ -325,6 +353,14 @@ namespace InfiniTag
                         mobList.RemoveAt(i);
                     }
                 }
+
+                for (int i = tempTextList.Count - 1; i >= 0; i--)
+                {
+                    tempTextList[i].Update(gameTime);
+                    if (tempTextList[i].getTime() <= 0)
+                        tempTextList.RemoveAt(i);
+                }
+
                 if (meter >= maxMeter)
                 {                    
                     //changeRule(chooseRuleColor());
@@ -378,6 +414,12 @@ namespace InfiniTag
             {
                 m.Draw(spriteBatch);
             }
+
+            foreach (tempText t in tempTextList)
+            {
+                t.Draw(spriteBatch);
+            }
+
             player1.Draw(spriteBatch);
 
             if (!rulesGreen[0])
@@ -386,7 +428,7 @@ namespace InfiniTag
                 drawTimeBar();
             if (!rulesGreen[2])
                 drawScore();
-            if (delayTimer > 0 && !rulesGreen[3])
+            if (delayTimer > 0 && !rulesGreen[3] && !pause && !gameOver)
                 spriteBatch.DrawString(Font1, warningText + ": " + (int)(delayTimer+1), warningPos, warningColor);
             
 
@@ -497,13 +539,15 @@ namespace InfiniTag
 
         public void drawPause()
         {
-            Vector2 pos = new Vector2(screenWidth/2-65, screenHeight/2-65);
-            spriteBatch.DrawString(Font1, "GAME PAUSED", pos, Color.Black);
+            string gp = "GAME PAUSED";
+            Vector2 pos = centerText(gp);
+            spriteBatch.DrawString(Font1, gp, pos, Color.Black);
         }
         public void drawGameOver()
         {
-            Vector2 pos = new Vector2(screenWidth / 2 - 65, screenHeight / 2 - 65);
-            spriteBatch.DrawString(Font1, "GAME OVER", pos, Color.Black);
+            string go = "GAME OVER";
+            Vector2 pos = centerText(go);
+            spriteBatch.DrawString(Font1, go, pos, Color.Black);
         }
 
         // checks if two particles 1 and 2 come within distance d of each other.
@@ -573,6 +617,10 @@ namespace InfiniTag
             for (int i = mobList.Count - 1; i >= 0; i--)
             {
             mobList.RemoveAt(i);
+            }
+            for (int i = tempTextList.Count - 1; i >= 0; i--)
+            {
+                tempTextList.RemoveAt(i);
             }
             player1.setX(screenWidth/2-25);
             player1.setY(screenHeight/2-25);
@@ -698,20 +746,35 @@ namespace InfiniTag
                     if (rulesRed[rule] == true)
                         onOrOff = "off";
                     warningText = rulesRedText[rule] + " " + onOrOff;
+                    centerWarning();
                     break;
                 case 1:
                     warningColor = Color.Green;
                     if (rulesGreen[rule] == false)
                         onOrOff = "off";
                     warningText = rulesGreenText[rule] +" "+ onOrOff;
+                    centerWarning();
                     break;
                 case 2:
                     warningColor = Color.Blue;
                     warningText = rulesBlueText[rule];
+                    centerWarning();
                     break;
                 default:
                     break;
             }
+        }
+
+        public Vector2 centerText(string s)
+        {
+            Vector2 pos = new Vector2(screenWidth / 2 - Font1.MeasureString(s).Length() / 2, screenHeight / 2- borderSpacing - barThickness);
+            return pos;
+        }
+
+        private void centerWarning()
+        {
+            warningPos = new Vector2(screenWidth / 2 - (Font1.MeasureString(warningText).Length() + Font1.MeasureString(" 1").Length()) / 2, 
+                screenHeight / 2- borderSpacing - barThickness);
         }
 
         private void changeSong(Song s)
